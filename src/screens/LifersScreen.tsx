@@ -6,17 +6,41 @@ import {
   RefreshControl,
   ActivityIndicator,
 } from "react-native";
-import { useFocusEffect } from "@react-navigation/native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 import type { Lifer } from "../types/database";
+import type { WalksStackParamList } from "../navigation/types";
 import { LiferCard } from "../components/LiferCard";
+import { LiferModal } from "../components/LiferModal";
 
 export function LifersScreen() {
   const [lifers, setLifers] = useState<Lifer[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [selectedLifer, setSelectedLifer] = useState<Lifer | null>(null);
+  const [showModal, setShowModal] = useState(false);
   const { user } = useAuth();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<WalksStackParamList>>();
+
+  const handleLiferPress = (lifer: Lifer) => {
+    setSelectedLifer(lifer);
+    setShowModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setSelectedLifer(null);
+  };
+
+  const handleNavigateToWalk = (walkId: string) => {
+    setShowModal(false);
+    setSelectedLifer(null);
+    navigation.navigate("WalkDetail", { walkId });
+  };
 
   const fetchLifers = async () => {
     if (!user) return;
@@ -98,9 +122,11 @@ export function LifersScreen() {
       }
     }
 
-    // Sort by species name
-    const lifersList = Array.from(speciesMap.values()).sort((a, b) =>
-      a.species_name.localeCompare(b.species_name)
+    // Sort by most recent sighting
+    const lifersList = Array.from(speciesMap.values()).sort(
+      (a, b) =>
+        new Date(b.most_recent_sighting).getTime() -
+        new Date(a.most_recent_sighting).getTime()
     );
 
     setLifers(lifersList);
@@ -127,24 +153,26 @@ export function LifersScreen() {
   if (loading) {
     return (
       <View className="flex-1 justify-center items-center bg-gray-50">
-        <ActivityIndicator size="large" color="#16a34a" />
+        <ActivityIndicator size="large" color="#111827" />
       </View>
     );
   }
 
   return (
     <View className="flex-1 bg-gray-50">
-      <View className="bg-white px-4 py-3 border-b border-gray-200">
-        <Text className="text-2xl font-bold text-gray-800">
-          {lifers.length} Species
-        </Text>
-        <Text className="text-gray-500">Your life list</Text>
-      </View>
+      <SafeAreaView edges={["top"]} className="bg-white">
+        <View className="px-4 py-4 border-b border-gray-200 flex-row items-center justify-between">
+          <Text className="text-xl font-semibold text-gray-900">Life List</Text>
+          <Text className="text-gray-500">{lifers.length} species</Text>
+        </View>
+      </SafeAreaView>
 
       <FlatList
         data={lifers}
         keyExtractor={(item) => item.species_code}
-        renderItem={({ item }) => <LiferCard lifer={item} />}
+        renderItem={({ item }) => (
+          <LiferCard lifer={item} onPress={() => handleLiferPress(item)} />
+        )}
         contentContainerStyle={{ padding: 16 }}
         ItemSeparatorComponent={() => <View className="h-3" />}
         ListEmptyComponent={
@@ -159,9 +187,16 @@ export function LifersScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            tintColor="#16a34a"
+            tintColor="#111827"
           />
         }
+      />
+
+      <LiferModal
+        visible={showModal}
+        lifer={selectedLifer}
+        onClose={handleCloseModal}
+        onNavigateToWalk={handleNavigateToWalk}
       />
     </View>
   );

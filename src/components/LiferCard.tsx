@@ -1,51 +1,33 @@
 import React from "react";
-import { View, Text } from "react-native";
+import { View, Text, Pressable } from "react-native";
+import { BirdImage } from "./BirdImage";
 import type { Lifer } from "../types/database";
 
 interface LiferCardProps {
   lifer: Lifer;
+  onPress?: () => void;
 }
 
-export function LiferCard({ lifer }: LiferCardProps) {
-  const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
-  };
-
-  const firstSighting = lifer.sightings[lifer.sightings.length - 1];
-
+export function LiferCard({ lifer, onPress }: LiferCardProps) {
   return (
-    <View className="bg-white rounded-lg p-4 shadow-sm">
-      <View className="flex-row justify-between items-start">
-        <View className="flex-1">
-          <Text className="text-lg font-semibold text-gray-800">
-            {lifer.species_name}
-          </Text>
-          {lifer.scientific_name && (
-            <Text className="text-gray-500 italic text-sm">
-              {lifer.scientific_name}
-            </Text>
-          )}
-        </View>
-        <View className="bg-green-100 px-2 py-1 rounded">
-          <Text className="text-green-700 font-medium text-sm">
-            {lifer.total_sightings}×
-          </Text>
-        </View>
-      </View>
-
-      <View className="mt-3 pt-3 border-t border-gray-100">
-        <Text className="text-gray-500 text-sm">
-          First seen: {formatDate(firstSighting.walk_date)}
+    <Pressable
+      onPress={onPress}
+      className="bg-white rounded-xl border border-gray-200 p-4 active:bg-gray-50"
+    >
+      <View className="flex-row items-center">
+        <BirdImage
+          speciesName={lifer.species_name}
+          scientificName={lifer.scientific_name}
+          size="md"
+        />
+        <Text className="font-medium text-gray-900 flex-1 ml-4">
+          {lifer.species_name}
         </Text>
-        <Text className="text-gray-400 text-xs mt-1">
-          {firstSighting.walk_name}
+        <Text className="text-sm text-gray-400">
+          {lifer.total_sightings}{" "}
+          {lifer.total_sightings === 1 ? "sighting" : "sightings"}
         </Text>
       </View>
-    </View>
+    </Pressable>
   );
 }

@@ -53,17 +53,17 @@ export function SignupScreen({ navigation }: AuthStackScreenProps<"Signup">) {
   if (success) {
     return (
       <View className="flex-1 justify-center px-6 bg-white">
-        <View className="bg-green-100 p-6 rounded-lg">
-          <Text className="text-green-800 text-center text-lg font-semibold mb-2">
+        <View className="bg-gray-100 p-6 rounded-lg">
+          <Text className="text-gray-800 text-center text-lg font-semibold mb-2">
             Check your email!
           </Text>
-          <Text className="text-green-700 text-center">
+          <Text className="text-gray-700 text-center">
             We've sent you a confirmation link to {email}
           </Text>
         </View>
         <Pressable
           onPress={() => navigation.navigate("Login")}
-          className="mt-6 py-4 bg-green-600 rounded-lg active:bg-green-700"
+          className="mt-6 py-4 bg-gray-900 rounded-lg active:bg-gray-800"
         >
           <Text className="text-white text-center font-semibold text-base">
             Back to Sign In
@@ -92,11 +92,21 @@ export function SignupScreen({ navigation }: AuthStackScreenProps<"Signup">) {
         <View className="mb-4">
           <Text className="text-gray-700 mb-2 font-medium">Email</Text>
           <TextInput
-            className="border border-gray-300 rounded-lg px-4 py-3 text-base"
+            style={{
+              borderWidth: 1,
+              borderColor: "#d1d5db",
+              borderRadius: 8,
+              paddingHorizontal: 16,
+              paddingVertical: 12,
+              fontSize: 16,
+              color: "#111827",
+            }}
             placeholder="you@example.com"
+            placeholderTextColor="#9ca3af"
             value={email}
             onChangeText={setEmail}
             autoCapitalize="none"
+            autoCorrect={false}
             keyboardType="email-address"
             autoComplete="email"
           />
@@ -105,8 +115,17 @@ export function SignupScreen({ navigation }: AuthStackScreenProps<"Signup">) {
         <View className="mb-4">
           <Text className="text-gray-700 mb-2 font-medium">Password</Text>
           <TextInput
-            className="border border-gray-300 rounded-lg px-4 py-3 text-base"
+            style={{
+              borderWidth: 1,
+              borderColor: "#d1d5db",
+              borderRadius: 8,
+              paddingHorizontal: 16,
+              paddingVertical: 12,
+              fontSize: 16,
+              color: "#111827",
+            }}
             placeholder="At least 6 characters"
+            placeholderTextColor="#9ca3af"
             value={password}
             onChangeText={setPassword}
             secureTextEntry
@@ -119,8 +138,17 @@ export function SignupScreen({ navigation }: AuthStackScreenProps<"Signup">) {
             Confirm Password
           </Text>
           <TextInput
-            className="border border-gray-300 rounded-lg px-4 py-3 text-base"
+            style={{
+              borderWidth: 1,
+              borderColor: "#d1d5db",
+              borderRadius: 8,
+              paddingHorizontal: 16,
+              paddingVertical: 12,
+              fontSize: 16,
+              color: "#111827",
+            }}
             placeholder="Confirm your password"
+            placeholderTextColor="#9ca3af"
             value={confirmPassword}
             onChangeText={setConfirmPassword}
             secureTextEntry
@@ -132,7 +160,7 @@ export function SignupScreen({ navigation }: AuthStackScreenProps<"Signup">) {
           onPress={handleSignup}
           disabled={loading}
           className={`rounded-lg py-4 ${
-            loading ? "bg-green-400" : "bg-green-600 active:bg-green-700"
+            loading ? "bg-gray-800" : "bg-gray-900 active:bg-gray-800"
           }`}
         >
           {loading ? (
@@ -150,7 +178,7 @@ export function SignupScreen({ navigation }: AuthStackScreenProps<"Signup">) {
         >
           <Text className="text-center text-gray-600">
             Already have an account?{" "}
-            <Text className="text-green-600 font-semibold">Sign In</Text>
+            <Text className="text-gray-900 font-semibold">Sign In</Text>
           </Text>
         </Pressable>
       </View>

@@ -53,11 +53,21 @@ export function LoginScreen({ navigation }: AuthStackScreenProps<"Login">) {
         <View className="mb-4">
           <Text className="text-gray-700 mb-2 font-medium">Email</Text>
           <TextInput
-            className="border border-gray-300 rounded-lg px-4 py-3 text-base"
+            style={{
+              borderWidth: 1,
+              borderColor: "#d1d5db",
+              borderRadius: 8,
+              paddingHorizontal: 16,
+              paddingVertical: 12,
+              fontSize: 16,
+              color: "#111827",
+            }}
             placeholder="you@example.com"
+            placeholderTextColor="#9ca3af"
             value={email}
             onChangeText={setEmail}
             autoCapitalize="none"
+            autoCorrect={false}
             keyboardType="email-address"
             autoComplete="email"
           />
@@ -66,8 +76,17 @@ export function LoginScreen({ navigation }: AuthStackScreenProps<"Login">) {
         <View className="mb-6">
           <Text className="text-gray-700 mb-2 font-medium">Password</Text>
           <TextInput
-            className="border border-gray-300 rounded-lg px-4 py-3 text-base"
+            style={{
+              borderWidth: 1,
+              borderColor: "#d1d5db",
+              borderRadius: 8,
+              paddingHorizontal: 16,
+              paddingVertical: 12,
+              fontSize: 16,
+              color: "#111827",
+            }}
             placeholder="Your password"
+            placeholderTextColor="#9ca3af"
             value={password}
             onChangeText={setPassword}
             secureTextEntry
@@ -79,7 +98,7 @@ export function LoginScreen({ navigation }: AuthStackScreenProps<"Login">) {
           onPress={handleLogin}
           disabled={loading}
           className={`rounded-lg py-4 ${
-            loading ? "bg-green-400" : "bg-green-600 active:bg-green-700"
+            loading ? "bg-gray-800" : "bg-gray-900 active:bg-gray-800"
           }`}
         >
           {loading ? (
@@ -97,7 +116,7 @@ export function LoginScreen({ navigation }: AuthStackScreenProps<"Login">) {
         >
           <Text className="text-center text-gray-600">
             Don't have an account?{" "}
-            <Text className="text-green-600 font-semibold">Sign Up</Text>
+            <Text className="text-gray-900 font-semibold">Sign Up</Text>
           </Text>
         </Pressable>
       </View>

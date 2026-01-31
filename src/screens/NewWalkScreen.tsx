@@ -113,6 +113,8 @@ export function NewWalkScreen({
               value={name}
               onChangeText={setName}
               autoFocus
+              autoCorrect={false}
+              autoCapitalize="none"
             />
           </View>
 
@@ -127,6 +129,8 @@ export function NewWalkScreen({
               numberOfLines={4}
               textAlignVertical="top"
               style={{ minHeight: 100 }}
+              autoCorrect={false}
+              autoCapitalize="none"
             />
           </View>
 
@@ -134,7 +138,7 @@ export function NewWalkScreen({
             <Text className="text-gray-700 font-medium mb-2">Location</Text>
             {locationLoading ? (
               <View className="flex-row items-center">
-                <ActivityIndicator size="small" color="#16a34a" />
+                <ActivityIndicator size="small" color="#111827" />
                 <Text className="text-gray-500 ml-2">Getting location...</Text>
               </View>
             ) : location ? (
@@ -152,7 +156,7 @@ export function NewWalkScreen({
             onPress={handleCreateWalk}
             disabled={loading}
             className={`rounded-lg py-4 ${
-              loading ? "bg-green-400" : "bg-green-600 active:bg-green-700"
+              loading ? "bg-gray-800" : "bg-gray-900 active:bg-gray-800"
             }`}
           >
             {loading ? (
