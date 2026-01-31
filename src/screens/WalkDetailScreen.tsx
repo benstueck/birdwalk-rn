@@ -9,20 +9,42 @@ import {
   Alert,
 } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
+import { useHeaderHeight } from "@react-navigation/elements";
+import { Ionicons } from "@expo/vector-icons";
 import { supabase } from "../lib/supabase";
 import type { Walk, Sighting } from "../types/database";
 import type { WalksStackScreenProps } from "../navigation/types";
 import { SightingCard } from "../components/SightingCard";
+import { NewSightingModal } from "../components/NewSightingModal";
+import { SightingModal } from "../components/SightingModal";
+import { WalkOptionsButton } from "../components/WalkOptionsButton";
+import { EditWalkModal } from "../components/EditWalkModal";
 
 export function WalkDetailScreen({
   route,
   navigation,
 }: WalksStackScreenProps<"WalkDetail">) {
   const { walkId } = route.params;
+  const headerHeight = useHeaderHeight();
   const [walk, setWalk] = useState<Walk | null>(null);
   const [sightings, setSightings] = useState<Sighting[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+
+  const [showNewSightingModal, setShowNewSightingModal] = useState(false);
+  const [selectedSighting, setSelectedSighting] = useState<Sighting | null>(null);
+  const [showSightingModal, setShowSightingModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+
+  const handleSightingPress = (sighting: Sighting) => {
+    setSelectedSighting(sighting);
+    setShowSightingModal(true);
+  };
+
+  const handleCloseSightingModal = () => {
+    setShowSightingModal(false);
+    setSelectedSighting(null);
+  };
 
   const fetchData = async () => {
     const [walkResult, sightingsResult] = await Promise.all([
@@ -66,31 +88,52 @@ export function WalkDetailScreen({
   );
 
   useEffect(() => {
-    if (walk) {
-      navigation.setOptions({ title: walk.name });
-    }
+    navigation.setOptions({
+      title: walk?.name ?? "",
+      headerBackVisible: false,
+      headerLeft: () => (
+        <Pressable onPress={() => navigation.goBack()} hitSlop={16}>
+          <Ionicons name="chevron-back" size={28} color="#111827" />
+        </Pressable>
+      ),
+    });
   }, [walk, navigation]);
 
   const handleDeleteSighting = async (sightingId: string) => {
+    const { error } = await supabase
+      .from("sightings")
+      .delete()
+      .eq("id", sightingId);
+
+    if (error) {
+      Alert.alert("Error", "Failed to delete sighting");
+    } else {
+      setSightings((prev) => prev.filter((s) => s.id !== sightingId));
+    }
+  };
+
+  const handleEditWalk = () => setShowEditModal(true);
+
+  const handleWalkUpdated = (updatedWalk: Walk) => {
+    setWalk(updatedWalk);
+    navigation.setOptions({
+      title: updatedWalk.name,
+    });
+  };
+
+  const handleDeleteWalk = () => {
     Alert.alert(
-      "Delete Sighting",
-      "Are you sure you want to delete this sighting?",
+      "Delete Walk",
+      `Delete "${walk?.name}"? This will also delete all sightings.`,
       [
         { text: "Cancel", style: "cancel" },
         {
           text: "Delete",
           style: "destructive",
           onPress: async () => {
-            const { error } = await supabase
-              .from("sightings")
-              .delete()
-              .eq("id", sightingId);
-
-            if (error) {
-              Alert.alert("Error", "Failed to delete sighting");
-            } else {
-              setSightings((prev) => prev.filter((s) => s.id !== sightingId));
-            }
+            await supabase.from("sightings").delete().eq("walk_id", walkId);
+            await supabase.from("walks").delete().eq("id", walkId);
+            navigation.goBack();
           },
         },
       ]
@@ -100,7 +143,7 @@ export function WalkDetailScreen({
   if (loading) {
     return (
       <View className="flex-1 justify-center items-center bg-gray-50">
-        <ActivityIndicator size="large" color="#16a34a" />
+        <ActivityIndicator size="large" color="#111827" />
       </View>
     );
   }
@@ -137,8 +180,8 @@ export function WalkDetailScreen({
               <Text className="text-gray-600 mt-3">{walk.notes}</Text>
             )}
             <View className="flex-row items-center mt-4">
-              <View className="bg-green-100 px-3 py-1 rounded-full">
-                <Text className="text-green-700 font-medium">
+              <View className="bg-gray-100 px-3 py-1 rounded-full">
+                <Text className="text-gray-700 font-medium">
                   {sightings.length} sighting{sightings.length !== 1 ? "s" : ""}
                 </Text>
               </View>
@@ -148,11 +191,11 @@ export function WalkDetailScreen({
         renderItem={({ item }) => (
           <SightingCard
             sighting={item}
-            onDelete={() => handleDeleteSighting(item.id)}
+            onPress={() => handleSightingPress(item)}
           />
         )}
         contentContainerStyle={{ paddingBottom: 100 }}
-        ItemSeparatorComponent={() => <View className="h-2" />}
+        ItemSeparatorComponent={() => <View className="h-3" />}
         ListEmptyComponent={
           <View className="flex-1 justify-center items-center py-20 px-4">
             <Text className="text-gray-500 text-lg mb-2 text-center">
@@ -167,17 +210,54 @@ export function WalkDetailScreen({
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            tintColor="#16a34a"
+            tintColor="#111827"
           />
         }
       />
 
+      <WalkOptionsButton
+        onEdit={handleEditWalk}
+        onDelete={handleDeleteWalk}
+      />
+
       <Pressable
-        onPress={() => navigation.navigate("NewSighting", { walkId })}
-        className="absolute bottom-6 right-6 w-14 h-14 bg-green-600 rounded-full justify-center items-center shadow-lg active:bg-green-700"
+        onPress={() => setShowNewSightingModal(true)}
+        className="absolute bottom-6 right-6 w-14 h-14 bg-gray-900 rounded-full justify-center items-center shadow-lg active:bg-gray-800"
       >
         <Text className="text-white text-3xl font-light">+</Text>
       </Pressable>
+
+      <NewSightingModal
+        visible={showNewSightingModal}
+        walkId={walkId}
+        topInset={headerHeight}
+        onClose={() => setShowNewSightingModal(false)}
+        onSightingCreated={(sighting) => {
+          setSightings((prev) => [sighting, ...prev]);
+        }}
+      />
+
+      <SightingModal
+        visible={showSightingModal}
+        sighting={selectedSighting}
+        topInset={headerHeight}
+        onClose={handleCloseSightingModal}
+        onDelete={handleDeleteSighting}
+        onSightingUpdated={(updated) => {
+          setSightings((prev) =>
+            prev.map((s) => (s.id === updated.id ? updated : s))
+          );
+          setSelectedSighting(updated);
+        }}
+      />
+
+      <EditWalkModal
+        visible={showEditModal}
+        walk={walk}
+        topInset={headerHeight}
+        onClose={() => setShowEditModal(false)}
+        onWalkUpdated={handleWalkUpdated}
+      />
     </View>
   );
 }

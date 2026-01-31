@@ -1,6 +1,6 @@
 import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { Text } from "react-native";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { WalksStackNavigator } from "./WalksStackNavigator";
 import { LifersScreen } from "../screens/LifersScreen";
 import { ProfileScreen } from "../screens/ProfileScreen";
@@ -12,7 +12,7 @@ export function MainNavigator() {
   return (
     <Tab.Navigator
       screenOptions={{
-        tabBarActiveTintColor: "#16a34a",
+        tabBarActiveTintColor: "#111827",
         tabBarInactiveTintColor: "#9ca3af",
         tabBarStyle: {
           backgroundColor: "#fff",
@@ -21,7 +21,7 @@ export function MainNavigator() {
         headerStyle: {
           backgroundColor: "#fff",
         },
-        headerTintColor: "#16a34a",
+        headerTintColor: "#111827",
         headerTitleStyle: {
           fontWeight: "600",
         },
@@ -32,8 +32,8 @@ export function MainNavigator() {
         component={WalksStackNavigator}
         options={{
           headerShown: false,
-          tabBarIcon: ({ color }) => (
-            <Text style={{ fontSize: 20, color }}>🚶</Text>
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="footsteps" size={size} color={color} />
           ),
         }}
       />
@@ -42,8 +42,8 @@ export function MainNavigator() {
         component={LifersScreen}
         options={{
           headerShown: false,
-          tabBarIcon: ({ color }) => (
-            <Text style={{ fontSize: 20, color }}>🐦</Text>
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons name="bird" size={size} color={color} />
           ),
         }}
       />
@@ -51,8 +51,8 @@ export function MainNavigator() {
         name="Profile"
         component={ProfileScreen}
         options={{
-          tabBarIcon: ({ color }) => (
-            <Text style={{ fontSize: 20, color }}>👤</Text>
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="person" size={size} color={color} />
           ),
         }}
       />

@@ -1,0 +1,244 @@
+import React, { useRef, useCallback, useEffect, useState, useMemo } from "react";
+import { View, Text, Pressable, Dimensions } from "react-native";
+import BottomSheet, {
+  BottomSheetBackdrop,
+  BottomSheetScrollView,
+} from "@gorhom/bottom-sheet";
+import { Image } from "expo-image";
+import type { Lifer } from "../types/database";
+import {
+  fetchBirdImage,
+  getCachedImageUrl,
+  getCachedDimensions,
+  cacheDimensions,
+} from "../utils/birdImages";
+
+const MAX_IMAGE_HEIGHT = 280;
+const BACKGROUND_COLOR = "#cbd5e1"; // slate-300
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
+
+interface LiferModalProps {
+  visible: boolean;
+  lifer: Lifer | null;
+  onClose: () => void;
+  onNavigateToWalk?: (walkId: string) => void;
+}
+
+export function LiferModal({
+  visible,
+  lifer,
+  onClose,
+  onNavigateToWalk,
+}: LiferModalProps) {
+  const bottomSheetRef = useRef<BottomSheet>(null);
+  const visibleRef = useRef(visible);
+
+  // Keep ref in sync with prop
+  useEffect(() => {
+    visibleRef.current = visible;
+  }, [visible]);
+
+  // Initialize from cache if available
+  const initialUrl = lifer ? getCachedImageUrl(lifer.species_name, lifer.scientific_name) : undefined;
+  const initialDimensions = lifer ? getCachedDimensions(lifer.species_name, lifer.scientific_name) : undefined;
+
+  const [imageUrl, setImageUrl] = useState<string | null>(initialUrl ?? null);
+  const [imageSize, setImageSize] = useState<{ width: number; height: number } | null>(initialDimensions ?? null);
+  const [isLoading, setIsLoading] = useState(initialUrl === undefined);
+
+  // Fetch image when lifer changes
+  useEffect(() => {
+    if (!lifer) return;
+
+    const cachedUrl = getCachedImageUrl(lifer.species_name, lifer.scientific_name);
+    const cachedDimensions = getCachedDimensions(lifer.species_name, lifer.scientific_name);
+
+    // If already cached, use cached values without resetting state
+    if (cachedUrl !== undefined) {
+      setImageUrl(cachedUrl);
+      setImageSize(cachedDimensions ?? null);
+      setIsLoading(false);
+      return;
+    }
+
+    // Only show loading state if not cached
+    setIsLoading(true);
+
+    fetchBirdImage(lifer.species_name, lifer.scientific_name).then((url) => {
+      setImageUrl(url);
+      setIsLoading(false);
+    });
+  }, [lifer?.species_name, lifer?.scientific_name]);
+
+  // Memoize image dimensions calculation
+  const { containerHeight, needsHorizontalLetterbox } = useMemo(() => {
+    if (!imageSize) {
+      return { containerHeight: SCREEN_WIDTH * 0.75, needsHorizontalLetterbox: false };
+    }
+
+    const aspectRatio = imageSize.width / imageSize.height;
+    const naturalHeight = SCREEN_WIDTH / aspectRatio;
+    const cappedHeight = Math.min(naturalHeight, MAX_IMAGE_HEIGHT);
+    const needsLetterbox = naturalHeight > MAX_IMAGE_HEIGHT;
+
+    return { containerHeight: cappedHeight, needsHorizontalLetterbox: needsLetterbox };
+  }, [imageSize]);
+
+  const renderBackdrop = useCallback(
+    (props: any) => (
+      <BottomSheetBackdrop
+        {...props}
+        disappearsOnIndex={-1}
+        appearsOnIndex={0}
+        opacity={0.5}
+        pressBehavior="close"
+      />
+    ),
+    []
+  );
+
+  useEffect(() => {
+    if (visible && lifer) {
+      bottomSheetRef.current?.expand();
+    } else {
+      bottomSheetRef.current?.close();
+    }
+  }, [visible, lifer]);
+
+  const handleSheetChanges = useCallback(
+    (index: number) => {
+      // Only close if user dismissed AND we're supposed to be visible
+      // This prevents race conditions when opening a new modal
+      if (index === -1 && visibleRef.current) {
+        onClose();
+      }
+    },
+    [onClose]
+  );
+
+  const formatDate = useCallback((dateStr: string) => {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+  }, []);
+
+  const handleImageLoad = useCallback(
+    (e: { source: { width: number; height: number } }) => {
+      const dimensions = { width: e.source.width, height: e.source.height };
+      setImageSize(dimensions);
+      if (lifer) {
+        cacheDimensions(lifer.species_name, lifer.scientific_name, dimensions);
+      }
+    },
+    [lifer]
+  );
+
+  return (
+    <BottomSheet
+      ref={bottomSheetRef}
+      index={-1}
+      enableDynamicSizing
+      enablePanDownToClose
+      backdropComponent={renderBackdrop}
+      onChange={handleSheetChanges}
+      maxDynamicContentSize={SCREEN_HEIGHT * 0.85}
+    >
+      <BottomSheetScrollView>
+        {lifer && (
+          <View className="pb-6">
+            {/* Hero Image with Overlay */}
+            <View className="relative">
+              <View
+                style={{
+                  width: SCREEN_WIDTH,
+                  height: containerHeight,
+                  backgroundColor: needsHorizontalLetterbox ? BACKGROUND_COLOR : "transparent",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                {isLoading && !imageUrl ? (
+                  <View style={{ width: "100%", height: "100%", backgroundColor: "#e5e7eb" }} />
+                ) : imageUrl ? (
+                  <Image
+                    source={{ uri: imageUrl }}
+                    style={{
+                      width: needsHorizontalLetterbox ? undefined : "100%",
+                      height: "100%",
+                      aspectRatio: imageSize ? imageSize.width / imageSize.height : undefined,
+                    }}
+                    contentFit="cover"
+                    cachePolicy="memory-disk"
+                    transition={200}
+                    onLoad={handleImageLoad}
+                  />
+                ) : (
+                  <Text className="text-gray-400 text-lg">?</Text>
+                )}
+              </View>
+
+              {/* Dark overlay at bottom for text readability */}
+              <View className="absolute bottom-0 left-0 right-0 h-16 bg-black/50" />
+
+              {/* Close button */}
+              <Pressable
+                onPress={onClose}
+                className="absolute top-3 right-3 w-8 h-8 bg-black/30 rounded-full items-center justify-center"
+              >
+                <Text className="text-white text-lg">×</Text>
+              </Pressable>
+
+              {/* Title overlay */}
+              <View className="absolute bottom-0 left-0 right-0 px-4 py-2">
+                <Text className="text-2xl font-semibold text-white">
+                  {lifer.species_name}
+                </Text>
+                {lifer.scientific_name && (
+                  <Text className="text-sm text-white/80 italic mt-0.5">
+                    {lifer.scientific_name}
+                  </Text>
+                )}
+              </View>
+            </View>
+
+            {/* Stats Bar */}
+            <View className="px-4 py-3 bg-gray-50 border-b border-gray-100">
+              <Text className="text-sm font-medium text-gray-600">
+                {lifer.total_sightings}{" "}
+                {lifer.total_sightings === 1 ? "sighting" : "sightings"}
+              </Text>
+            </View>
+
+            {/* Sighting History */}
+            <View className="px-4 pt-4">
+              <Text className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-3">
+                Sighting History
+              </Text>
+              <View className="gap-2">
+                {lifer.sightings.map((sighting) => (
+                  <Pressable
+                    key={sighting.id}
+                    onPress={() => onNavigateToWalk?.(sighting.walk_id)}
+                    className="bg-gray-50 rounded-xl p-3 active:bg-gray-100"
+                  >
+                    <View className="flex-row items-center justify-between">
+                      <Text className="font-medium text-gray-900">
+                        {sighting.walk_name}
+                      </Text>
+                      <Text className="text-sm text-gray-500">
+                        {formatDate(sighting.walk_date)}
+                      </Text>
+                    </View>
+                  </Pressable>
+                ))}
+              </View>
+            </View>
+          </View>
+        )}
+      </BottomSheetScrollView>
+    </BottomSheet>
+  );
+}

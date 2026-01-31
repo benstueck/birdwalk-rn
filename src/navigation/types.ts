@@ -13,7 +13,7 @@ export type WalksStackParamList = {
   WalksList: undefined;
   WalkDetail: { walkId: string };
   NewWalk: undefined;
-  NewSighting: { walkId: string };
+  Search: { initialQuery?: string };
 };
 
 // Main Tab Navigator

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   View,
   Text,
@@ -12,73 +12,57 @@ import BottomSheet, {
   BottomSheetBackdrop,
   BottomSheetView,
 } from "@gorhom/bottom-sheet";
-import * as Location from "expo-location";
 import { supabase } from "../lib/supabase";
-import { useAuth } from "../contexts/AuthContext";
-import type { Walk, WalkInsert } from "../types/database";
+import type { Walk } from "../types/database";
 
-interface NewWalkModalProps {
+interface EditWalkModalProps {
   visible: boolean;
+  walk: Walk | null;
   onClose: () => void;
-  onWalkCreated: (walkId: string) => void;
+  onWalkUpdated: (walk: Walk) => void;
+  topInset?: number;
 }
 
-export function NewWalkModal({
+export function EditWalkModal({
   visible,
+  walk,
   onClose,
-  onWalkCreated,
-}: NewWalkModalProps) {
+  onWalkUpdated,
+  topInset,
+}: EditWalkModalProps) {
   const [name, setName] = useState("");
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
-  const [location, setLocation] = useState<{
-    lat: number;
-    lng: number;
-  } | null>(null);
-  const { user } = useAuth();
 
   const bottomSheetRef = useRef<BottomSheet>(null);
 
   const renderBackdrop = useCallback(
-    (props: any) => (
-      <BottomSheetBackdrop
-        {...props}
-        disappearsOnIndex={-1}
-        appearsOnIndex={0}
-        opacity={0.5}
-        pressBehavior="close"
-      />
-    ),
-    []
+    (props: any) => {
+      if (!visible) return null;
+      return (
+        <BottomSheetBackdrop
+          {...props}
+          disappearsOnIndex={-1}
+          appearsOnIndex={0}
+          opacity={0.5}
+          pressBehavior="close"
+        />
+      );
+    },
+    [visible]
   );
 
   useEffect(() => {
-    if (visible) {
-      setName("");
-      setNotes("");
+    if (visible && walk) {
+      setName(walk.name);
+      setNotes(walk.notes || "");
       setLoading(false);
       bottomSheetRef.current?.expand();
-
-      // Get location
-      (async () => {
-        const { status } = await Location.requestForegroundPermissionsAsync();
-        if (status === "granted") {
-          try {
-            const loc = await Location.getCurrentPositionAsync({});
-            setLocation({
-              lat: loc.coords.latitude,
-              lng: loc.coords.longitude,
-            });
-          } catch (error) {
-            console.error("Error getting location:", error);
-          }
-        }
-      })();
     } else {
       Keyboard.dismiss();
       bottomSheetRef.current?.close();
     }
-  }, [visible]);
+  }, [visible, walk]);
 
   const handleSheetChanges = useCallback(
     (index: number) => {
@@ -89,47 +73,36 @@ export function NewWalkModal({
     [onClose]
   );
 
-  const handleCreateWalk = async () => {
+  const handleSaveWalk = async () => {
     if (!name.trim()) {
       Alert.alert("Error", "Please enter a name for your walk");
       return;
     }
 
-    if (!user) {
-      Alert.alert("Error", "You must be logged in");
+    if (!walk) {
       return;
     }
 
     setLoading(true);
 
-    const now = new Date();
-    const date = now.toISOString().split("T")[0];
-    const startTime = now.toTimeString().split(" ")[0];
-
-    const walkData: WalkInsert = {
-      user_id: user.id,
-      name: name.trim(),
-      date,
-      start_time: startTime,
-      notes: notes.trim() || null,
-      location_lat: location?.lat ?? null,
-      location_lng: location?.lng ?? null,
-    };
-
-    const { data, error } = await supabase
-      .from("walks")
-      .insert(walkData as any)
+    const { data, error } = await (supabase
+      .from("walks") as any)
+      .update({
+        name: name.trim(),
+        notes: notes.trim() || null,
+      })
+      .eq("id", walk.id)
       .select()
       .single();
 
     if (error) {
-      Alert.alert("Error", "Failed to create walk");
-      console.error("Error creating walk:", error);
+      Alert.alert("Error", "Failed to update walk");
+      console.error("Error updating walk:", error);
       setLoading(false);
     } else if (data) {
-      const walk = data as Walk;
+      const updatedWalk = data as Walk;
       onClose();
-      onWalkCreated(walk.id);
+      onWalkUpdated(updatedWalk);
     }
   };
 
@@ -137,6 +110,7 @@ export function NewWalkModal({
     <BottomSheet
       ref={bottomSheetRef}
       index={-1}
+      topInset={topInset}
       enableDynamicSizing
       enablePanDownToClose
       backdropComponent={renderBackdrop}
@@ -149,7 +123,7 @@ export function NewWalkModal({
         {/* Header */}
         <View className="flex-row items-center justify-between mb-4">
           <Text className="text-xl font-semibold text-gray-900">
-            Start a Bird Walk
+            Edit Walk
           </Text>
           <Pressable onPress={onClose} className="p-2 -mr-2">
             <Text className="text-gray-400 text-2xl">×</Text>
@@ -204,7 +178,7 @@ export function NewWalkModal({
         </View>
 
         <Pressable
-          onPress={handleCreateWalk}
+          onPress={handleSaveWalk}
           disabled={loading}
           className={`rounded-lg py-4 ${
             loading ? "bg-gray-800" : "bg-gray-900 active:bg-gray-800"
@@ -214,7 +188,7 @@ export function NewWalkModal({
             <ActivityIndicator color="white" />
           ) : (
             <Text className="text-white text-center font-semibold text-base">
-              Start
+              Save
             </Text>
           )}
         </Pressable>

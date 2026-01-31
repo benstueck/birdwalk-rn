@@ -91,7 +91,7 @@ export function ProfileScreen() {
   if (loading) {
     return (
       <View className="flex-1 justify-center items-center bg-gray-50">
-        <ActivityIndicator size="large" color="#16a34a" />
+        <ActivityIndicator size="large" color="#111827" />
       </View>
     );
   }
@@ -103,13 +103,13 @@ export function ProfileScreen() {
         <RefreshControl
           refreshing={refreshing}
           onRefresh={onRefresh}
-          tintColor="#16a34a"
+          tintColor="#111827"
         />
       }
     >
       <View className="bg-white p-6 border-b border-gray-200">
-        <View className="w-20 h-20 bg-green-100 rounded-full justify-center items-center mx-auto mb-4">
-          <Text className="text-3xl text-green-600">
+        <View className="w-20 h-20 bg-gray-200 rounded-full justify-center items-center mx-auto mb-4">
+          <Text className="text-3xl text-gray-600">
             {user?.email?.charAt(0).toUpperCase() || "?"}
           </Text>
         </View>
@@ -125,21 +125,21 @@ export function ProfileScreen() {
 
         <View className="flex-row">
           <View className="flex-1 bg-white p-4 rounded-lg mr-2">
-            <Text className="text-3xl font-bold text-green-600 text-center">
+            <Text className="text-3xl font-bold text-gray-900 text-center">
               {stats.totalWalks}
             </Text>
             <Text className="text-gray-500 text-center mt-1">Walks</Text>
           </View>
 
           <View className="flex-1 bg-white p-4 rounded-lg mx-1">
-            <Text className="text-3xl font-bold text-green-600 text-center">
+            <Text className="text-3xl font-bold text-gray-900 text-center">
               {stats.totalSightings}
             </Text>
             <Text className="text-gray-500 text-center mt-1">Sightings</Text>
           </View>
 
           <View className="flex-1 bg-white p-4 rounded-lg ml-2">
-            <Text className="text-3xl font-bold text-green-600 text-center">
+            <Text className="text-3xl font-bold text-gray-900 text-center">
               {stats.uniqueSpecies}
             </Text>
             <Text className="text-gray-500 text-center mt-1">Species</Text>
