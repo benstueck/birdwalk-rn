@@ -5,6 +5,33 @@
 **Created**: 2026-02-09
 **Aligned with**: Walks tab sort implementation (WalksListScreen.tsx:33-34, 96, 164-169)
 
+## Reference Implementation: WalksListScreen.tsx
+
+**CRITICAL: Read WalksListScreen.tsx FIRST before implementing. Match these patterns exactly:**
+
+1. **Sort state** (lines 33-34):
+   - `const [sortBy, setSortBy] = useState<SortOption>(DEFAULT_SORT);`
+   - `const [showSortModal, setShowSortModal] = useState(false);`
+
+2. **useFocusEffect dependency** (lines 76-80):
+   - Include `sortBy` in dependency array: `}, [user, sortBy])`
+   - This refetches data when sort changes (pagination-safe)
+
+3. **Loading check pattern** (lines 82-89):
+   - Use: `if (loading && walks.length === 0)`
+   - NOT: `if (loading)`
+   - This prevents spinner flash during re-sorts
+
+4. **Header layout** (lines 94-97):
+   - Title on left, SortButton on right
+   - SortButton opens SortBottomSheet
+
+5. **SortButton usage**:
+   - Pass `defaultSort` prop to control blue indicator
+   - Blue dot only shows for non-default sorts
+
+**Do NOT deviate from these patterns unless there's a specific reason. If unsure, ask first.**
+
 ## Overview
 Implement sorting functionality for the Lifers tab to allow users to organize their life list by species name, recent sighting date, or total sighting count. Follows the same UI/UX pattern as the Walks tab for consistency.
 

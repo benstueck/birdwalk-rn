@@ -1,15 +1,16 @@
 import React from "react";
 import { Pressable, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { DEFAULT_SORT, SortOption } from "../types/sort";
+import { DEFAULT_SORT, SortOption, LiferSortOption } from "../types/sort";
 
 interface SortButtonProps {
-  sortBy: SortOption;
+  sortBy: SortOption | LiferSortOption;
   onPress: () => void;
+  defaultSort?: SortOption | LiferSortOption;
 }
 
-export function SortButton({ sortBy, onPress }: SortButtonProps) {
-  const isNonDefault = sortBy !== DEFAULT_SORT;
+export function SortButton({ sortBy, onPress, defaultSort }: SortButtonProps) {
+  const isNonDefault = sortBy !== (defaultSort || DEFAULT_SORT);
 
   return (
     <Pressable

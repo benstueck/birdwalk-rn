@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -9,12 +9,16 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 import type { Lifer } from "../types/database";
 import type { WalksStackParamList } from "../navigation/types";
 import { LiferCard } from "../components/LiferCard";
 import { LiferModal } from "../components/LiferModal";
+import { SortButton } from "../components/SortButton";
+import { SortBottomSheet } from "../components/SortBottomSheet";
+import { LiferSortOption, DEFAULT_LIFER_SORT, liferSortOptions } from "../types/sort";
 
 export function LifersScreen() {
   const [lifers, setLifers] = useState<Lifer[]>([]);
@@ -22,6 +26,8 @@ export function LifersScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [selectedLifer, setSelectedLifer] = useState<Lifer | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const [sortBy, setSortBy] = useState<LiferSortOption>(DEFAULT_LIFER_SORT);
+  const [showSortModal, setShowSortModal] = useState(false);
   const { user } = useAuth();
   const navigation =
     useNavigation<NativeStackNavigationProp<WalksStackParamList>>();
@@ -40,6 +46,30 @@ export function LifersScreen() {
     setShowModal(false);
     setSelectedLifer(null);
     navigation.navigate("WalkDetail", { walkId });
+  };
+
+  // Load saved sort preference
+  useEffect(() => {
+    const loadSortPreference = async () => {
+      try {
+        const saved = await AsyncStorage.getItem('@lifers_sort_preference');
+        if (saved) setSortBy(saved as LiferSortOption);
+      } catch (error) {
+        console.error('Error loading sort preference:', error);
+      }
+    };
+    loadSortPreference();
+  }, []);
+
+  // Save sort preference when it changes
+  const handleSortChange = async (newSort: LiferSortOption) => {
+    setSortBy(newSort);
+    setShowSortModal(false);
+    try {
+      await AsyncStorage.setItem('@lifers_sort_preference', newSort);
+    } catch (error) {
+      console.error('Error saving sort preference:', error);
+    }
   };
 
   const fetchLifers = async () => {
@@ -122,12 +152,39 @@ export function LifersScreen() {
       }
     }
 
-    // Sort by most recent sighting
-    const lifersList = Array.from(speciesMap.values()).sort(
-      (a, b) =>
-        new Date(b.most_recent_sighting).getTime() -
-        new Date(a.most_recent_sighting).getTime()
-    );
+    // Apply sorting based on sortBy state
+    let lifersList = Array.from(speciesMap.values());
+
+    switch (sortBy) {
+      case "recent-desc":
+        lifersList.sort((a, b) =>
+          new Date(b.most_recent_sighting).getTime() -
+          new Date(a.most_recent_sighting).getTime()
+        );
+        break;
+      case "recent-asc":
+        lifersList.sort((a, b) =>
+          new Date(a.most_recent_sighting).getTime() -
+          new Date(b.most_recent_sighting).getTime()
+        );
+        break;
+      case "name-asc":
+        lifersList.sort((a, b) =>
+          a.species_name.localeCompare(b.species_name)
+        );
+        break;
+      case "name-desc":
+        lifersList.sort((a, b) =>
+          b.species_name.localeCompare(a.species_name)
+        );
+        break;
+      case "count-desc":
+        lifersList.sort((a, b) => b.total_sightings - a.total_sightings);
+        break;
+      case "count-asc":
+        lifersList.sort((a, b) => a.total_sightings - b.total_sightings);
+        break;
+    }
 
     setLifers(lifersList);
   };
@@ -147,10 +204,11 @@ export function LifersScreen() {
   useFocusEffect(
     useCallback(() => {
       loadLifers();
-    }, [user])
+    }, [user, sortBy])
   );
 
-  if (loading) {
+  // Only show full-screen spinner on initial load
+  if (loading && lifers.length === 0) {
     return (
       <View className="flex-1 justify-center items-center bg-gray-50">
         <ActivityIndicator size="large" color="#111827" />
@@ -163,9 +221,17 @@ export function LifersScreen() {
       <SafeAreaView edges={["top"]} className="bg-white">
         <View className="px-4 py-4 border-b border-gray-200 flex-row items-center justify-between">
           <Text className="text-xl font-semibold text-gray-900">Life List</Text>
-          <Text className="text-gray-500">{lifers.length} species</Text>
+          <SortButton
+            sortBy={sortBy}
+            defaultSort={DEFAULT_LIFER_SORT}
+            onPress={() => setShowSortModal(true)}
+          />
         </View>
       </SafeAreaView>
+
+      <View className="px-4 pt-4 pb-2 bg-gray-50">
+        <Text className="text-2xl font-bold text-gray-900">{lifers.length} species</Text>
+      </View>
 
       <FlatList
         data={lifers}
@@ -197,6 +263,14 @@ export function LifersScreen() {
         lifer={selectedLifer}
         onClose={handleCloseModal}
         onNavigateToWalk={handleNavigateToWalk}
+      />
+
+      <SortBottomSheet
+        visible={showSortModal}
+        sortBy={sortBy}
+        onClose={() => setShowSortModal(false)}
+        onSortChange={handleSortChange}
+        sortOptions={liferSortOptions}
       />
     </View>
   );

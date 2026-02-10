@@ -4,13 +4,14 @@ import BottomSheet, {
   BottomSheetBackdrop,
   BottomSheetView,
 } from "@gorhom/bottom-sheet";
-import { SortOption, sortOptions } from "../types/sort";
+import { SortOption, LiferSortOption } from "../types/sort";
 
 interface SortBottomSheetProps {
   visible: boolean;
-  sortBy: SortOption;
+  sortBy: SortOption | LiferSortOption;
   onClose: () => void;
-  onSortChange: (sort: SortOption) => void;
+  onSortChange: (sort: any) => void;
+  sortOptions?: Record<string, Array<{ value: any; label: string }>>;
 }
 
 export function SortBottomSheet({
@@ -18,8 +19,12 @@ export function SortBottomSheet({
   sortBy,
   onClose,
   onSortChange,
+  sortOptions: customSortOptions,
 }: SortBottomSheetProps) {
   const bottomSheetRef = useRef<BottomSheet>(null);
+
+  // Use default sortOptions if none provided (for backward compatibility)
+  const sortOptionsToUse = customSortOptions || require("../types/sort").sortOptions;
 
   const renderBackdrop = useCallback(
     (props: any) => (
@@ -51,12 +56,12 @@ export function SortBottomSheet({
     [onClose]
   );
 
-  const handleOptionPress = (option: SortOption) => {
+  const handleOptionPress = (option: any) => {
     onSortChange(option);
     onClose();
   };
 
-  const renderOption = (option: { value: SortOption; label: string }) => {
+  const renderOption = (option: { value: any; label: string }) => {
     const isSelected = sortBy === option.value;
 
     return (
@@ -96,17 +101,25 @@ export function SortBottomSheet({
           </Pressable>
         </View>
 
-        {/* Date Group */}
-        <Text className="text-sm font-medium text-gray-500 mb-2 uppercase tracking-wide">
-          Date
-        </Text>
-        {sortOptions.date.map(renderOption)}
+        {/* Dynamic Groups */}
+        {Object.entries(sortOptionsToUse).map(([key, options], index) => {
+          const groupLabels: Record<string, string> = {
+            date: "Date",
+            count: "Bird Count",
+            recent: "Recent Sighting",
+            name: "Species Name",
+          };
 
-        {/* Count Group */}
-        <Text className="text-sm font-medium text-gray-500 mb-2 mt-4 uppercase tracking-wide">
-          Bird Count
-        </Text>
-        {sortOptions.count.map(renderOption)}
+          return (
+            <View key={key}>
+              {index > 0 && <View className="mt-4" />}
+              <Text className="text-sm font-medium text-gray-500 mb-2 uppercase tracking-wide">
+                {groupLabels[key] || key}
+              </Text>
+              {options.map(renderOption)}
+            </View>
+          );
+        })}
       </BottomSheetView>
     </BottomSheet>
   );
