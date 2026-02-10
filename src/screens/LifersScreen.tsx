@@ -230,7 +230,7 @@ export function LifersScreen() {
       </SafeAreaView>
 
       <View className="px-4 pt-4 pb-2 bg-gray-50">
-        <Text className="text-2xl font-bold text-gray-900">{lifers.length} species</Text>
+        <Text className="text-lg font-semibold text-gray-500">{lifers.length} species</Text>
       </View>
 
       <FlatList
