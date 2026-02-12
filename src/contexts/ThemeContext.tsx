@@ -67,7 +67,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const systemColorScheme = useColorScheme();
   const { setColorScheme: setNativeWindScheme } = useNativeWindColorScheme();
   const [mode, setMode] = useState<ThemeMode>('system');
-  const [isReady, setIsReady] = useState(false);
 
   // Load saved preference on mount
   useEffect(() => {
@@ -82,8 +81,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       }
     } catch (error) {
       console.error('Failed to load theme preference:', error);
-    } finally {
-      setIsReady(true);
     }
   };
 
@@ -104,17 +101,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   // Sync NativeWind when effective theme changes
   useEffect(() => {
-    if (isReady) {
-      setNativeWindScheme(effectiveTheme);
-    }
-  }, [effectiveTheme, isReady, setNativeWindScheme]);
+    setNativeWindScheme(effectiveTheme);
+  }, [effectiveTheme, setNativeWindScheme]);
 
   const colors = effectiveTheme === 'dark' ? darkColors : lightColors;
-
-  // Don't render until preference is loaded
-  if (!isReady) {
-    return null;
-  }
 
   return (
     <ThemeContext.Provider value={{ mode, effectiveTheme, setThemeMode, colors }}>
