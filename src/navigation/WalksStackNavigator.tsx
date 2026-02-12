@@ -1,10 +1,10 @@
 import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { useTheme } from "@react-navigation/native";
 import { WalksListScreen } from "../screens/WalksListScreen";
 import { WalkDetailScreen } from "../screens/WalkDetailScreen";
 import { NewWalkScreen } from "../screens/NewWalkScreen";
 import { SearchScreen } from "../screens/SearchScreen";
-import { useTheme } from "../contexts/ThemeContext";
 import type { WalksStackParamList } from "./types";
 
 const Stack = createNativeStackNavigator<WalksStackParamList>();
@@ -16,9 +16,9 @@ export function WalksStackNavigator() {
     <Stack.Navigator
       screenOptions={{
         headerStyle: {
-          backgroundColor: colors.surface,
+          backgroundColor: colors.card,
         },
-        headerTintColor: colors.text.primary,
+        headerTintColor: colors.text,
         headerTitleStyle: {
           fontWeight: "600",
         },

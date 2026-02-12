@@ -1,31 +1,31 @@
 import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { useTheme as useNavigationTheme } from "@react-navigation/native";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { WalksStackNavigator } from "./WalksStackNavigator";
 import { LifersScreen } from "../screens/LifersScreen";
 import { ProfileScreen } from "../screens/ProfileScreen";
-import { useTheme } from "../contexts/ThemeContext";
 import type { MainTabParamList } from "./types";
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
 export function MainNavigator() {
-  const { colors } = useTheme();
+  const { colors } = useNavigationTheme();
 
   return (
     <Tab.Navigator
       screenOptions={{
-        tabBarActiveTintColor: colors.accent,
-        tabBarInactiveTintColor: colors.text.tertiary,
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.text,
         tabBarStyle: {
-          backgroundColor: colors.surface,
+          backgroundColor: colors.card,
           borderTopColor: colors.border,
           borderTopWidth: 1,
         },
         headerStyle: {
-          backgroundColor: colors.surface,
+          backgroundColor: colors.card,
         },
-        headerTintColor: colors.text.primary,
+        headerTintColor: colors.text,
         headerTitleStyle: {
           fontWeight: "600",
         },
