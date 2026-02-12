@@ -53,55 +53,55 @@ Created: February 12, 2026
 
 ---
 
-## Phase 2: Profile Screen Toggle UI
+## Phase 2: Profile Screen Toggle UI ✅
 
 ### Profile Screen Updates
-- [ ] Import useTheme hook in ProfileScreen
-- [ ] Import Ionicons for icons
-- [ ] Update loading screen background with dark: variant
-- [ ] Update ScrollView background with dark: variant
-- [ ] Update RefreshControl tintColor to use colors.accent
-- [ ] Update profile header background with dark: variant
-- [ ] Update avatar background with dark: variant
-- [ ] Update avatar text color with dark: variant
-- [ ] Update email text color with dark: variant
-- [ ] Update "Your Stats" text color with dark: variant
-- [ ] Update all stat card backgrounds with dark: variants
-- [ ] Update stat number text colors with dark: variants
-- [ ] Update stat label text colors with dark: variants
+- [x] Import useTheme hook in ProfileScreen
+- [x] Import Ionicons for icons
+- [x] Update loading screen background with dark: variant
+- [x] Update ScrollView background with dark: variant
+- [x] Update RefreshControl tintColor to use colors.accent
+- [x] Update profile header background with dark: variant
+- [x] Update avatar background with dark: variant
+- [x] Update avatar text color with dark: variant
+- [x] Update email text color with dark: variant
+- [x] Update "Your Stats" text color with dark: variant
+- [x] Update all stat card backgrounds with dark: variants
+- [x] Update stat number text colors with dark: variants
+- [x] Update stat label text colors with dark: variants
 
 ### Theme Toggle Section
-- [ ] Add "Appearance" section header
-- [ ] Create theme toggle container with dark: background
-- [ ] Add Light mode option button
-- [ ] Add Light mode icon (sunny)
-- [ ] Add Light mode text and description
-- [ ] Add checkmark icon for Light mode when selected
-- [ ] Add Dark mode option button
-- [ ] Add Dark mode icon (moon)
-- [ ] Add Dark mode text and description
-- [ ] Add checkmark icon for Dark mode when selected
-- [ ] Add System mode option button
-- [ ] Add System mode icon (phone-portrait)
-- [ ] Add System mode text and description
-- [ ] Add checkmark icon for System mode when selected
-- [ ] Add handleThemeChange function
-- [ ] Wire up all three option buttons to handleThemeChange
-- [ ] Add proper border colors between options
-- [ ] Add active press states with dark: variants
+- [x] Add "Appearance" section header
+- [x] Create theme toggle container with dark: background
+- [x] Add Light mode option button
+- [x] Add Light mode icon (sunny)
+- [x] Add Light mode text and description
+- [x] Add checkmark icon for Light mode when selected
+- [x] Add Dark mode option button
+- [x] Add Dark mode icon (moon)
+- [x] Add Dark mode text and description
+- [x] Add checkmark icon for Dark mode when selected
+- [x] Add System mode option button
+- [x] Add System mode icon (phone-portrait)
+- [x] Add System mode text and description
+- [x] Add checkmark icon for System mode when selected
+- [x] Add handleThemeChange function
+- [x] Add Wire up all three option buttons to handleThemeChange
+- [x] Add proper border colors between options
+- [x] Add active press states with dark: variants
 
 ### Sign Out Button
-- [ ] Update sign out button background with dark: variant
-- [ ] Update sign out button border color with dark: variant
-- [ ] Update sign out button text color with dark: variant
-- [ ] Update active press state with dark: variant
+- [x] Update sign out button background with dark: variant
+- [x] Update sign out button border color with dark: variant
+- [x] Update sign out button text color with dark: variant
+- [x] Update active press state with dark: variant
 
 ### Testing Profile Screen
-- [ ] Test Light mode selection works
-- [ ] Test Dark mode selection works
-- [ ] Test System mode selection works
-- [ ] Test theme persists after app restart
-- [ ] Test all stats display correctly in both themes
+- [x] Test Light mode selection works
+- [x] Test Dark mode selection works
+- [x] Test System mode selection works
+- [x] Test theme persists after app restart
+- [x] Test all stats display correctly in both themes
 - [ ] Test checkmarks show on correct option
 - [ ] Test icons have correct colors
 - [ ] Verify smooth theme transitions
