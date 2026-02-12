@@ -67,6 +67,11 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const systemColorScheme = useColorScheme();
   const [mode, setMode] = useState<ThemeMode>('system');
 
+  // Debug: Log system color scheme
+  useEffect(() => {
+    console.log('System color scheme from React Native:', systemColorScheme);
+  }, [systemColorScheme]);
+
   // Load saved preference on mount
   useEffect(() => {
     loadThemePreference();
