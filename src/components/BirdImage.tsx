@@ -112,22 +112,22 @@ export function BirdImage({
 
   if (isLoading) {
     return (
-      <View className={`${containerClass} bg-gray-200 overflow-hidden`} />
+      <View className={`${containerClass} bg-gray-200 dark:bg-[#202225] overflow-hidden`} />
     );
   }
 
   if (hasError || !imageUrl) {
     return (
       <View
-        className={`${containerClass} bg-gray-100 overflow-hidden items-center justify-center`}
+        className={`${containerClass} bg-gray-100 dark:bg-[#202225] overflow-hidden items-center justify-center`}
       >
-        <Text className="text-gray-400 text-lg">?</Text>
+        <Text className="text-gray-400 dark:text-[#72767d] text-lg">?</Text>
       </View>
     );
   }
 
   return (
-    <View className={`${containerClass} overflow-hidden bg-slate-300`}>
+    <View className={`${containerClass} overflow-hidden bg-slate-300 dark:bg-[#202225]`}>
       <Image
         source={{ uri: imageUrl }}
         style={{ width: "100%", height: "100%" }}
