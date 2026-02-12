@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { useColorScheme, Appearance } from 'react-native';
+import { useColorScheme } from 'react-native';
+import { colorScheme } from 'nativewind';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type ThemeMode = 'light' | 'dark' | 'system';
@@ -97,17 +98,16 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       ? (systemColorScheme ?? 'light')
       : mode;
 
-  // Sync appearance when effective theme changes
+  // Sync NativeWind when effective theme changes
   useEffect(() => {
-    console.log('Setting appearance to:', effectiveTheme);
-    // Use React Native's Appearance API to control system appearance
-    // This should trigger NativeWind's dark mode
+    console.log('Setting color scheme to:', effectiveTheme);
+    // Use NativeWind's colorScheme.set() method
     if (mode !== 'system') {
-      Appearance.setColorScheme(effectiveTheme);
+      colorScheme.set(effectiveTheme);
     } else {
-      Appearance.setColorScheme(null); // Follow system
+      colorScheme.set(undefined); // Follow system
     }
-    console.log('Current appearance:', Appearance.getColorScheme());
+    console.log('Current color scheme:', colorScheme.get());
   }, [effectiveTheme, mode]);
 
   const colors = effectiveTheme === 'dark' ? darkColors : lightColors;
