@@ -4,24 +4,28 @@ import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { WalksStackNavigator } from "./WalksStackNavigator";
 import { LifersScreen } from "../screens/LifersScreen";
 import { ProfileScreen } from "../screens/ProfileScreen";
+import { useTheme } from "../contexts/ThemeContext";
 import type { MainTabParamList } from "./types";
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
 export function MainNavigator() {
+  const { colors } = useTheme();
+
   return (
     <Tab.Navigator
       screenOptions={{
-        tabBarActiveTintColor: "#111827",
-        tabBarInactiveTintColor: "#9ca3af",
+        tabBarActiveTintColor: colors.accent,
+        tabBarInactiveTintColor: colors.text.tertiary,
         tabBarStyle: {
-          backgroundColor: "#fff",
-          borderTopColor: "#e5e7eb",
+          backgroundColor: colors.surface,
+          borderTopColor: colors.border,
+          borderTopWidth: 1,
         },
         headerStyle: {
-          backgroundColor: "#fff",
+          backgroundColor: colors.surface,
         },
-        headerTintColor: "#111827",
+        headerTintColor: colors.text.primary,
         headerTitleStyle: {
           fontWeight: "600",
         },
