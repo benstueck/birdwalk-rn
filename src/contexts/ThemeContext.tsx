@@ -65,7 +65,7 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const systemColorScheme = useColorScheme();
-  const { setColorScheme: setNativeWindScheme } = useNativeWindColorScheme();
+  const { colorScheme: nativeWindScheme, setColorScheme: setNativeWindScheme } = useNativeWindColorScheme();
   const [mode, setMode] = useState<ThemeMode>('system');
 
   // Load saved preference on mount
@@ -101,8 +101,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   // Sync NativeWind when effective theme changes
   useEffect(() => {
+    console.log('Setting NativeWind scheme to:', effectiveTheme);
     setNativeWindScheme(effectiveTheme);
-  }, [effectiveTheme, setNativeWindScheme]);
+    console.log('NativeWind scheme after setting:', nativeWindScheme);
+  }, [effectiveTheme]);
 
   const colors = effectiveTheme === 'dark' ? darkColors : lightColors;
 
