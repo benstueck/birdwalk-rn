@@ -4,18 +4,21 @@ import { WalksListScreen } from "../screens/WalksListScreen";
 import { WalkDetailScreen } from "../screens/WalkDetailScreen";
 import { NewWalkScreen } from "../screens/NewWalkScreen";
 import { SearchScreen } from "../screens/SearchScreen";
+import { useTheme } from "../contexts/ThemeContext";
 import type { WalksStackParamList } from "./types";
 
 const Stack = createNativeStackNavigator<WalksStackParamList>();
 
 export function WalksStackNavigator() {
+  const { colors } = useTheme();
+
   return (
     <Stack.Navigator
       screenOptions={{
         headerStyle: {
-          backgroundColor: "#fff",
+          backgroundColor: colors.surface,
         },
-        headerTintColor: "#111827",
+        headerTintColor: colors.text.primary,
         headerTitleStyle: {
           fontWeight: "600",
         },
