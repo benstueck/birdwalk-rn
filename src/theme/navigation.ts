@@ -1,6 +1,7 @@
-import { Theme } from '@react-navigation/native';
+import { Theme, DefaultTheme, DarkTheme } from '@react-navigation/native';
 
 export const LightNavigationTheme: Theme = {
+  ...DefaultTheme,
   dark: false,
   colors: {
     primary: '#111827',        // Gray-900
@@ -13,6 +14,7 @@ export const LightNavigationTheme: Theme = {
 };
 
 export const DarkNavigationTheme: Theme = {
+  ...DarkTheme,
   dark: true,
   colors: {
     primary: '#5865f2',        // Discord blue
