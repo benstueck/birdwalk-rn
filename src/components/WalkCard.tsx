@@ -27,18 +27,18 @@ export function WalkCard({ walk, sightingsCount, onPress }: WalkCardProps) {
   return (
     <Pressable
       onPress={onPress}
-      className="bg-white rounded-lg p-4 shadow-sm active:bg-gray-50"
+      className="bg-white dark:bg-[#2f3136] rounded-lg p-4 shadow-sm border border-gray-100 dark:border-[#202225] active:bg-gray-50 dark:active:bg-[#202225]"
     >
       <View className="flex-row justify-between items-start">
         <View className="flex-1">
-          <Text className="text-lg font-semibold text-gray-800">
+          <Text className="text-lg font-semibold text-gray-800 dark:text-[#dcddde]">
             {walk.name}
           </Text>
-          <Text className="text-gray-500 mt-1">
+          <Text className="text-gray-500 dark:text-[#72767d] mt-1">
             {formatDate(walk.date, walk.start_time)}
           </Text>
         </View>
-        <Text className="text-gray-600 font-medium">
+        <Text className="text-gray-600 dark:text-[#b9bbbe] font-medium">
           {sightingsCount} {sightingsCount === 1 ? "Bird" : "Birds"}
         </Text>
       </View>
