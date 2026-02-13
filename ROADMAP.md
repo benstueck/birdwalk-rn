@@ -14,13 +14,7 @@ This roadmap tracks the planned features and improvements for the Birdwalk React
 
 ### P0 - High Priority
 
-#### 1. Dark Mode
-**Status**: Planning
-**Plan Document**: [plans/dark-mode.md](plans/dark-mode.md)
-
-Add dark mode support to provide a dark color scheme option for users, improving usability in low-light conditions.
-
-#### 2. Offline Mode
+#### 1. Offline Mode
 **Status**: Planning
 **Plan Document**: [plans/03-offline-mode.md](plans/03-offline-mode.md)
 **User Priority**: #1 requested feature
@@ -172,6 +166,12 @@ Add optional detailed fields for serious birders who want to track more informat
 
 ## Completed Tasks
 
+#### Dark Mode
+**Completed**: 2026-02-13
+**Plan Document**: [plans/dark-mode.md](plans/dark-mode.md)
+
+Implemented comprehensive dark mode support with Discord-inspired color palette. Users can toggle between Light, Dark, and System modes via the Profile screen. Theme preference persists across app restarts. All screens, components, and modals fully support both themes with proper contrast ratios and smooth transitions.
+
 #### Add Sort to Lifers Tab
 **Completed**: 2026-02-10
 **Plan Document**: [plans/01-lifers-sort.md](plans/01-lifers-sort.md)
@@ -203,4 +203,4 @@ Based on user feedback, offline mode has been elevated from P1 to P0 priority as
 
 ---
 
-**Last Updated**: 2026-02-11
+**Last Updated**: 2026-02-13

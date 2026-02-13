@@ -6,6 +6,7 @@ import BottomSheet, {
 } from "@gorhom/bottom-sheet";
 import { Image } from "expo-image";
 import { Ionicons } from "@expo/vector-icons";
+import { useTheme } from "../contexts/ThemeContext";
 import type { Sighting } from "../types/database";
 import {
   fetchBirdImage,
@@ -16,7 +17,6 @@ import {
 import { EditSightingModal } from "./EditSightingModal";
 
 const MAX_IMAGE_HEIGHT = 280;
-const BACKGROUND_COLOR = "#cbd5e1"; // slate-300
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 interface SightingModalProps {
@@ -36,6 +36,7 @@ export function SightingModal({
   onSightingUpdated,
   topInset,
 }: SightingModalProps) {
+  const { colors } = useTheme();
   const bottomSheetRef = useRef<BottomSheet>(null);
   const visibleRef = useRef(visible);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -177,6 +178,8 @@ export function SightingModal({
       backdropComponent={renderBackdrop}
       onChange={handleSheetChanges}
       maxDynamicContentSize={SCREEN_HEIGHT * 0.85}
+      backgroundStyle={{ backgroundColor: colors.surface }}
+      handleIndicatorStyle={{ backgroundColor: colors.text.tertiary }}
     >
       <BottomSheetScrollView>
         {sighting && (
@@ -187,13 +190,13 @@ export function SightingModal({
                 style={{
                   width: SCREEN_WIDTH,
                   height: containerHeight,
-                  backgroundColor: needsHorizontalLetterbox ? BACKGROUND_COLOR : "transparent",
+                  backgroundColor: needsHorizontalLetterbox ? colors.border : "transparent",
                   alignItems: "center",
                   justifyContent: "center",
                 }}
               >
                 {isLoading && !imageUrl ? (
-                  <View style={{ width: "100%", height: "100%", backgroundColor: "#e5e7eb" }} />
+                  <View style={{ width: "100%", height: "100%", backgroundColor: colors.background.secondary }} />
                 ) : imageUrl ? (
                   <Image
                     source={{ uri: imageUrl }}
@@ -208,7 +211,7 @@ export function SightingModal({
                     onLoad={handleImageLoad}
                   />
                 ) : (
-                  <Text className="text-gray-400 text-lg">?</Text>
+                  <Text className="text-gray-400 dark:text-[#72767d] text-lg">?</Text>
                 )}
               </View>
 
@@ -237,22 +240,22 @@ export function SightingModal({
             </View>
 
             {/* Details */}
-            <View className="px-4 py-4 border-b border-gray-100">
+            <View className="px-4 py-4 border-b border-gray-100 dark:border-[#202225]">
               <View className="flex-row items-center justify-between mb-2">
-                <Text className="text-sm text-gray-500">Time</Text>
-                <Text className="text-sm font-medium text-gray-900">
+                <Text className="text-sm text-gray-500 dark:text-[#72767d]">Time</Text>
+                <Text className="text-sm font-medium text-gray-900 dark:text-[#dcddde]">
                   {formatTime(sighting.timestamp)}
                 </Text>
               </View>
               <View className="flex-row items-center justify-between">
-                <Text className="text-sm text-gray-500">Type</Text>
+                <Text className="text-sm text-gray-500 dark:text-[#72767d]">Type</Text>
                 <View className="flex-row items-center">
                   <Ionicons
                     name={sighting.type === "seen" ? "eye-outline" : "ear-outline"}
                     size={16}
-                    color="#6b7280"
+                    color={colors.text.secondary}
                   />
-                  <Text className="text-sm font-medium text-gray-900 ml-1">
+                  <Text className="text-sm font-medium text-gray-900 dark:text-[#dcddde] ml-1">
                     {sighting.type === "seen" ? "Seen" : "Heard"}
                   </Text>
                 </View>
@@ -261,9 +264,9 @@ export function SightingModal({
 
             {/* Notes */}
             {sighting.notes && (
-              <View className="px-4 py-4 border-b border-gray-100">
-                <Text className="text-sm text-gray-500 mb-1">Notes</Text>
-                <Text className="text-sm text-gray-900">{sighting.notes}</Text>
+              <View className="px-4 py-4 border-b border-gray-100 dark:border-[#202225]">
+                <Text className="text-sm text-gray-500 dark:text-[#72767d] mb-1">Notes</Text>
+                <Text className="text-sm text-gray-900 dark:text-[#dcddde]">{sighting.notes}</Text>
               </View>
             )}
 
@@ -272,17 +275,17 @@ export function SightingModal({
               {onSightingUpdated && (
                 <Pressable
                   onPress={() => setShowEditModal(true)}
-                  className="p-2 active:bg-gray-100 rounded-full mr-2"
+                  className="p-2 active:bg-gray-100 dark:active:bg-[#202225] rounded-full mr-2"
                 >
-                  <Ionicons name="pencil-outline" size={22} color="#6b7280" />
+                  <Ionicons name="pencil-outline" size={22} color={colors.text.secondary} />
                 </Pressable>
               )}
               {onDelete && (
                 <Pressable
                   onPress={handleDelete}
-                  className="p-2 active:bg-gray-100 rounded-full"
+                  className="p-2 active:bg-gray-100 dark:active:bg-[#202225] rounded-full"
                 >
-                  <Ionicons name="trash-outline" size={22} color="#ef4444" />
+                  <Ionicons name="trash-outline" size={22} color={colors.destructive} />
                 </Pressable>
               )}
             </View>

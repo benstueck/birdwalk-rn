@@ -4,6 +4,7 @@ import BottomSheet, {
   BottomSheetBackdrop,
   BottomSheetView,
 } from "@gorhom/bottom-sheet";
+import { useTheme } from "../contexts/ThemeContext";
 import { SortOption, LiferSortOption } from "../types/sort";
 
 interface SortBottomSheetProps {
@@ -22,6 +23,7 @@ export function SortBottomSheet({
   sortOptions: customSortOptions,
 }: SortBottomSheetProps) {
   const bottomSheetRef = useRef<BottomSheet>(null);
+  const { colors } = useTheme();
 
   // Use default sortOptions if none provided (for backward compatibility)
   const sortOptionsToUse = customSortOptions || require("../types/sort").sortOptions;
@@ -69,12 +71,12 @@ export function SortBottomSheet({
         key={option.value}
         onPress={() => handleOptionPress(option.value)}
         className={`px-4 py-3 rounded-lg mb-2 ${
-          isSelected ? "bg-gray-900" : "bg-gray-100 active:bg-gray-200"
+          isSelected ? "bg-gray-900 dark:bg-[#5865f2]" : "bg-gray-100 dark:bg-[#2f3136] active:bg-gray-200 dark:active:bg-[#202225]"
         }`}
       >
         <Text
           className={`text-base ${
-            isSelected ? "text-white font-medium" : "text-gray-900"
+            isSelected ? "text-white font-medium" : "text-gray-900 dark:text-[#dcddde]"
           }`}
         >
           {option.label}
@@ -91,13 +93,15 @@ export function SortBottomSheet({
       enablePanDownToClose
       backdropComponent={renderBackdrop}
       onChange={handleSheetChanges}
+      backgroundStyle={{ backgroundColor: colors.surface }}
+      handleIndicatorStyle={{ backgroundColor: colors.text.tertiary }}
     >
       <BottomSheetView className="px-6 pb-10">
         {/* Header */}
         <View className="flex-row items-center justify-between mb-6">
-          <Text className="text-xl font-semibold text-gray-900">Sort by</Text>
+          <Text className="text-xl font-semibold text-gray-900 dark:text-[#dcddde]">Sort by</Text>
           <Pressable onPress={onClose} className="p-2 -mr-2">
-            <Text className="text-gray-400 text-2xl">×</Text>
+            <Text className="text-gray-400 dark:text-[#72767d] text-2xl">×</Text>
           </Pressable>
         </View>
 
@@ -113,7 +117,7 @@ export function SortBottomSheet({
           return (
             <View key={key}>
               {index > 0 && <View className="mt-4" />}
-              <Text className="text-sm font-medium text-gray-500 mb-2 uppercase tracking-wide">
+              <Text className="text-sm font-medium text-gray-500 dark:text-[#72767d] mb-2 uppercase tracking-wide">
                 {groupLabels[key] || key}
               </Text>
               {options.map(renderOption)}

@@ -7,6 +7,7 @@ import Animated, {
   withTiming,
   interpolate,
 } from "react-native-reanimated";
+import { useTheme } from "../contexts/ThemeContext";
 
 interface SkeletonBarProps {
   width: number;
@@ -14,6 +15,7 @@ interface SkeletonBarProps {
 }
 
 export function SkeletonBar({ width, height = 18 }: SkeletonBarProps) {
+  const { colors } = useTheme();
   const shimmer = useSharedValue(0);
 
   useEffect(() => {
@@ -30,7 +32,7 @@ export function SkeletonBar({ width, height = 18 }: SkeletonBarProps) {
         {
           width,
           height,
-          backgroundColor: "#d1d5db",
+          backgroundColor: colors.border,
           borderRadius: 4,
         },
         animatedStyle,

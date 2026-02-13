@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { View, Text, Pressable, Animated } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useTheme } from "../contexts/ThemeContext";
 
 interface WalkOptionsButtonProps {
   onEdit: () => void;
@@ -8,6 +9,7 @@ interface WalkOptionsButtonProps {
 }
 
 export function WalkOptionsButton({ onEdit, onDelete }: WalkOptionsButtonProps) {
+  const { colors } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
   const animation = useRef(new Animated.Value(0)).current;
 
@@ -72,11 +74,11 @@ export function WalkOptionsButton({ onEdit, onDelete }: WalkOptionsButtonProps) 
           onPress={handleDelete}
           className="flex-row items-center"
         >
-          <View className="bg-white rounded-lg px-3 py-2 mr-3 shadow">
-            <Text className="text-red-500 font-medium">Delete</Text>
+          <View className="bg-white dark:bg-[#2f3136] rounded-lg px-3 py-2 mr-3 shadow">
+            <Text className="text-red-500 dark:text-[#ed4245] font-medium">Delete</Text>
           </View>
-          <View className="w-11 h-11 bg-white rounded-full justify-center items-center shadow">
-            <Ionicons name="trash" size={20} color="#ef4444" />
+          <View className="w-11 h-11 bg-white dark:bg-[#2f3136] rounded-full justify-center items-center shadow">
+            <Ionicons name="trash" size={20} color={colors.destructive} />
           </View>
         </Pressable>
       </Animated.View>
@@ -96,11 +98,11 @@ export function WalkOptionsButton({ onEdit, onDelete }: WalkOptionsButtonProps) 
           onPress={handleEdit}
           className="flex-row items-center"
         >
-          <View className="bg-white rounded-lg px-3 py-2 mr-3 shadow">
-            <Text className="text-gray-700 font-medium">Edit</Text>
+          <View className="bg-white dark:bg-[#2f3136] rounded-lg px-3 py-2 mr-3 shadow">
+            <Text className="text-gray-700 dark:text-[#dcddde] font-medium">Edit</Text>
           </View>
-          <View className="w-11 h-11 bg-white rounded-full justify-center items-center shadow">
-            <Ionicons name="pencil" size={20} color="#6b7280" />
+          <View className="w-11 h-11 bg-white dark:bg-[#2f3136] rounded-full justify-center items-center shadow">
+            <Ionicons name="pencil" size={20} color={colors.text.secondary} />
           </View>
         </Pressable>
       </Animated.View>
@@ -108,12 +110,12 @@ export function WalkOptionsButton({ onEdit, onDelete }: WalkOptionsButtonProps) 
       {/* Main FAB */}
       <Pressable
         onPress={() => setIsOpen(!isOpen)}
-        className="w-14 h-14 bg-white rounded-full justify-center items-center shadow-lg active:bg-gray-100"
+        className="w-14 h-14 bg-white dark:bg-[#2f3136] rounded-full justify-center items-center shadow-lg active:bg-gray-100 dark:active:bg-[#202225]"
       >
         <Ionicons
           name={isOpen ? "close" : "ellipsis-horizontal"}
           size={24}
-          color="#111827"
+          color={colors.text.primary}
         />
       </Pressable>
     </View>

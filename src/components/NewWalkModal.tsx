@@ -13,6 +13,7 @@ import BottomSheet, {
   BottomSheetView,
 } from "@gorhom/bottom-sheet";
 import * as Location from "expo-location";
+import { useTheme } from "../contexts/ThemeContext";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 import type { Walk, WalkInsert } from "../types/database";
@@ -28,6 +29,7 @@ export function NewWalkModal({
   onClose,
   onWalkCreated,
 }: NewWalkModalProps) {
+  const { colors } = useTheme();
   const [name, setName] = useState("");
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
@@ -144,33 +146,36 @@ export function NewWalkModal({
       keyboardBehavior="interactive"
       keyboardBlurBehavior="restore"
       android_keyboardInputMode="adjustResize"
+      backgroundStyle={{ backgroundColor: colors.surface }}
+      handleIndicatorStyle={{ backgroundColor: colors.text.tertiary }}
     >
       <BottomSheetView className="px-6 pb-10">
         {/* Header */}
         <View className="flex-row items-center justify-between mb-4">
-          <Text className="text-xl font-semibold text-gray-900">
+          <Text className="text-xl font-semibold text-gray-900 dark:text-[#dcddde]">
             Start a Bird Walk
           </Text>
           <Pressable onPress={onClose} className="p-2 -mr-2">
-            <Text className="text-gray-400 text-2xl">×</Text>
+            <Text className="text-gray-400 dark:text-[#72767d] text-2xl">×</Text>
           </Pressable>
         </View>
 
         {/* Form */}
         <View className="mb-4">
-          <Text className="text-gray-700 mb-2 font-medium">Walk Name *</Text>
+          <Text className="text-gray-700 dark:text-[#b9bbbe] mb-2 font-medium">Walk Name *</Text>
           <BottomSheetTextInput
             style={{
               borderWidth: 1,
-              borderColor: "#d1d5db",
+              borderColor: colors.input.border,
               borderRadius: 8,
               paddingHorizontal: 16,
               paddingVertical: 12,
               fontSize: 16,
-              color: "#111827",
+              color: colors.input.text,
+              backgroundColor: colors.input.background,
             }}
             placeholder="e.g., Morning walk at the park"
-            placeholderTextColor="#9ca3af"
+            placeholderTextColor={colors.input.placeholder}
             value={name}
             onChangeText={setName}
             autoCorrect={false}
@@ -179,21 +184,22 @@ export function NewWalkModal({
         </View>
 
         <View className="mb-6">
-          <Text className="text-gray-700 mb-2 font-medium">Notes</Text>
+          <Text className="text-gray-700 dark:text-[#b9bbbe] mb-2 font-medium">Notes</Text>
           <BottomSheetTextInput
             style={{
               borderWidth: 1,
-              borderColor: "#d1d5db",
+              borderColor: colors.input.border,
               borderRadius: 8,
               paddingHorizontal: 16,
               paddingVertical: 12,
               fontSize: 16,
-              color: "#111827",
+              color: colors.input.text,
+              backgroundColor: colors.input.background,
               minHeight: 80,
               textAlignVertical: "top",
             }}
             placeholder="Any notes about this walk (optional)"
-            placeholderTextColor="#9ca3af"
+            placeholderTextColor={colors.input.placeholder}
             value={notes}
             onChangeText={setNotes}
             multiline
@@ -207,7 +213,7 @@ export function NewWalkModal({
           onPress={handleCreateWalk}
           disabled={loading}
           className={`rounded-lg py-4 ${
-            loading ? "bg-gray-800" : "bg-gray-900 active:bg-gray-800"
+            loading ? "bg-gray-800 dark:bg-[#4752c4]" : "bg-gray-900 dark:bg-[#5865f2] active:bg-gray-800 dark:active:bg-[#4752c4]"
           }`}
         >
           {loading ? (
