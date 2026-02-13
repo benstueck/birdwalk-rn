@@ -12,6 +12,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import { useHeaderHeight } from "@react-navigation/elements";
 import { Ionicons } from "@expo/vector-icons";
 import { supabase } from "../lib/supabase";
+import { useTheme } from "../contexts/ThemeContext";
 import type { Walk, Sighting } from "../types/database";
 import type { WalksStackScreenProps } from "../navigation/types";
 import { SightingCard } from "../components/SightingCard";
@@ -26,6 +27,7 @@ export function WalkDetailScreen({
 }: WalksStackScreenProps<"WalkDetail">) {
   const { walkId } = route.params;
   const headerHeight = useHeaderHeight();
+  const { colors } = useTheme();
   const [walk, setWalk] = useState<Walk | null>(null);
   const [sightings, setSightings] = useState<Sighting[]>([]);
   const [loading, setLoading] = useState(true);
@@ -92,12 +94,12 @@ export function WalkDetailScreen({
       title: walk?.name ?? "",
       headerBackVisible: false,
       headerLeft: () => (
-        <Pressable onPress={() => navigation.goBack()} hitSlop={16}>
-          <Ionicons name="chevron-back" size={28} color="#111827" />
+        <Pressable onPress={() => navigation.goBack()} hitSlop={16} style={{ marginLeft: 3 }}>
+          <Ionicons name="chevron-back" size={28} color={colors.text.primary} />
         </Pressable>
       ),
     });
-  }, [walk, navigation]);
+  }, [walk, navigation, colors]);
 
   const handleDeleteSighting = async (sightingId: string) => {
     const { error } = await supabase
@@ -142,16 +144,16 @@ export function WalkDetailScreen({
 
   if (loading) {
     return (
-      <View className="flex-1 justify-center items-center bg-gray-50">
-        <ActivityIndicator size="large" color="#111827" />
+      <View className="flex-1 justify-center items-center bg-gray-50 dark:bg-[#36393f]">
+        <ActivityIndicator size="large" color={colors.accent} />
       </View>
     );
   }
 
   if (!walk) {
     return (
-      <View className="flex-1 justify-center items-center bg-gray-50">
-        <Text className="text-gray-500">Walk not found</Text>
+      <View className="flex-1 justify-center items-center bg-gray-50 dark:bg-[#36393f]">
+        <Text className="text-gray-500 dark:text-[#b9bbbe]">Walk not found</Text>
       </View>
     );
   }
@@ -166,22 +168,22 @@ export function WalkDetailScreen({
   };
 
   return (
-    <View className="flex-1 bg-gray-50">
+    <View className="flex-1 bg-gray-50 dark:bg-[#36393f]">
       <FlatList
         data={sightings}
         keyExtractor={(item) => item.id}
         ListHeaderComponent={
-          <View className="bg-white p-4 mb-4 border-b border-gray-200">
-            <Text className="text-gray-600 mb-1">{formatDate(walk.date)}</Text>
-            <Text className="text-gray-500 text-sm">
+          <View className="bg-white dark:bg-[#2f3136] p-4 mb-4 border-b border-gray-200 dark:border-[#202225]">
+            <Text className="text-gray-600 dark:text-[#b9bbbe] mb-1">{formatDate(walk.date)}</Text>
+            <Text className="text-gray-500 dark:text-[#72767d] text-sm">
               Started at {walk.start_time}
             </Text>
             {walk.notes && (
-              <Text className="text-gray-600 mt-3">{walk.notes}</Text>
+              <Text className="text-gray-600 dark:text-[#b9bbbe] mt-3">{walk.notes}</Text>
             )}
             <View className="flex-row items-center mt-4">
-              <View className="bg-gray-100 px-3 py-1 rounded-full">
-                <Text className="text-gray-700 font-medium">
+              <View className="bg-gray-100 dark:bg-[#202225] px-3 py-1 rounded-full">
+                <Text className="text-gray-700 dark:text-[#dcddde] font-medium">
                   {sightings.length} sighting{sightings.length !== 1 ? "s" : ""}
                 </Text>
               </View>
@@ -198,10 +200,10 @@ export function WalkDetailScreen({
         ItemSeparatorComponent={() => <View className="h-3" />}
         ListEmptyComponent={
           <View className="flex-1 justify-center items-center py-20 px-4">
-            <Text className="text-gray-500 text-lg mb-2 text-center">
+            <Text className="text-gray-500 dark:text-[#b9bbbe] text-lg mb-2 text-center">
               No sightings yet
             </Text>
-            <Text className="text-gray-400 text-center">
+            <Text className="text-gray-400 dark:text-[#72767d] text-center">
               Tap the + button to add your first sighting
             </Text>
           </View>
@@ -210,7 +212,7 @@ export function WalkDetailScreen({
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            tintColor="#111827"
+            tintColor={colors.accent}
           />
         }
       />
@@ -222,7 +224,7 @@ export function WalkDetailScreen({
 
       <Pressable
         onPress={() => setShowNewSightingModal(true)}
-        className="absolute bottom-6 right-6 w-14 h-14 bg-gray-900 rounded-full justify-center items-center shadow-lg active:bg-gray-800"
+        className="absolute bottom-6 right-6 w-14 h-14 bg-gray-900 dark:bg-[#5865f2] rounded-full justify-center items-center shadow-lg active:bg-gray-800 dark:active:bg-[#4752c4]"
       >
         <Text className="text-white text-3xl font-light">+</Text>
       </Pressable>

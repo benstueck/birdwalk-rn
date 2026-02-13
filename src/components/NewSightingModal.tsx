@@ -13,6 +13,7 @@ import BottomSheet, {
   BottomSheetScrollView,
 } from "@gorhom/bottom-sheet";
 import * as Location from "expo-location";
+import { useTheme } from "../contexts/ThemeContext";
 import { supabase } from "../lib/supabase";
 import { searchSpeciesCached, EBirdSpecies } from "../lib/ebird";
 import type { SightingInsert, Sighting } from "../types/database";
@@ -32,6 +33,7 @@ export function NewSightingModal({
   onSightingCreated,
   topInset,
 }: NewSightingModalProps) {
+  const { colors } = useTheme();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSpecies, setSelectedSpecies] = useState<EBirdSpecies | null>(
     null
@@ -186,6 +188,8 @@ export function NewSightingModal({
       keyboardBehavior="interactive"
       keyboardBlurBehavior="restore"
       android_keyboardInputMode="adjustResize"
+      backgroundStyle={{ backgroundColor: colors.surface }}
+      handleIndicatorStyle={{ backgroundColor: colors.text.tertiary }}
     >
       <BottomSheetScrollView
         contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 40 }}
@@ -193,31 +197,32 @@ export function NewSightingModal({
       >
         {/* Header */}
         <View className="flex-row items-center justify-between mb-4">
-          <Text className="text-xl font-semibold text-gray-900">
+          <Text className="text-xl font-semibold text-gray-900 dark:text-[#dcddde]">
             Add Sighting
           </Text>
           <Pressable onPress={onClose} className="p-2 -mr-2">
-            <Text className="text-gray-400 text-2xl">×</Text>
+            <Text className="text-gray-400 dark:text-[#72767d] text-2xl">×</Text>
           </Pressable>
         </View>
 
         {/* Species Search */}
         <View className="mb-4">
-          <Text className="text-gray-700 mb-2 font-medium">Species *</Text>
+          <Text className="text-gray-700 dark:text-[#b9bbbe] mb-2 font-medium">Species *</Text>
           <View className="relative">
             <BottomSheetTextInput
               style={{
                 borderWidth: 1,
-                borderColor: "#d1d5db",
+                borderColor: colors.input.border,
                 borderRadius: 8,
                 paddingHorizontal: 16,
                 paddingVertical: 12,
                 fontSize: 16,
-                color: "#111827",
+                color: colors.input.text,
+                backgroundColor: colors.input.background,
                 paddingRight: selectedSpecies ? 40 : 16,
               }}
               placeholder="Search for a bird species..."
-              placeholderTextColor="#9ca3af"
+              placeholderTextColor={colors.input.placeholder}
               value={searchQuery}
               onChangeText={(text) => {
                 setSearchQuery(text);
@@ -233,30 +238,30 @@ export function NewSightingModal({
                 onPress={handleClearSelection}
                 className="absolute right-3 top-3"
               >
-                <Text className="text-gray-400 text-lg">×</Text>
+                <Text className="text-gray-400 dark:text-[#72767d] text-lg">×</Text>
               </Pressable>
             )}
           </View>
 
           {searching && (
             <View className="mt-2 flex-row items-center">
-              <ActivityIndicator size="small" color="#111827" />
-              <Text className="text-gray-500 ml-2">Searching...</Text>
+              <ActivityIndicator size="small" color={colors.accent} />
+              <Text className="text-gray-500 dark:text-[#72767d] ml-2">Searching...</Text>
             </View>
           )}
 
           {searchResults.length > 0 && (
-            <View className="mt-2 border border-gray-200 rounded-lg overflow-hidden">
+            <View className="mt-2 border border-gray-200 dark:border-[#202225] rounded-lg overflow-hidden">
               {searchResults.slice(0, 5).map((item) => (
                 <Pressable
                   key={item.speciesCode}
                   onPress={() => handleSelectSpecies(item)}
-                  className="p-3 border-b border-gray-100 active:bg-gray-50"
+                  className="p-3 border-b border-gray-100 dark:border-[#202225] active:bg-gray-50 dark:active:bg-[#202225]"
                 >
-                  <Text className="font-medium text-gray-800">
+                  <Text className="font-medium text-gray-800 dark:text-[#dcddde]">
                     {item.comName}
                   </Text>
-                  <Text className="text-gray-500 text-sm italic">
+                  <Text className="text-gray-500 dark:text-[#72767d] text-sm italic">
                     {item.sciName}
                   </Text>
                 </Pressable>
@@ -268,19 +273,19 @@ export function NewSightingModal({
 
         {/* Sighting Type */}
         <View className="mb-4">
-          <Text className="text-gray-700 mb-2 font-medium">Sighting Type</Text>
+          <Text className="text-gray-700 dark:text-[#b9bbbe] mb-2 font-medium">Sighting Type</Text>
           <View className="flex-row">
             <Pressable
               onPress={() => setType("seen")}
               className={`flex-1 py-3 rounded-l-lg border ${
                 type === "seen"
-                  ? "bg-gray-900 border-gray-900"
-                  : "bg-white border-gray-300"
+                  ? "bg-gray-900 dark:bg-[#5865f2] border-gray-900 dark:border-[#5865f2]"
+                  : "bg-white dark:bg-[#2f3136] border-gray-300 dark:border-[#202225]"
               }`}
             >
               <Text
                 className={`text-center font-medium ${
-                  type === "seen" ? "text-white" : "text-gray-700"
+                  type === "seen" ? "text-white" : "text-gray-700 dark:text-[#dcddde]"
                 }`}
               >
                 Seen
@@ -290,13 +295,13 @@ export function NewSightingModal({
               onPress={() => setType("heard")}
               className={`flex-1 py-3 rounded-r-lg border-t border-b border-r ${
                 type === "heard"
-                  ? "bg-gray-900 border-gray-900"
-                  : "bg-white border-gray-300"
+                  ? "bg-gray-900 dark:bg-[#5865f2] border-gray-900 dark:border-[#5865f2]"
+                  : "bg-white dark:bg-[#2f3136] border-gray-300 dark:border-[#202225]"
               }`}
             >
               <Text
                 className={`text-center font-medium ${
-                  type === "heard" ? "text-white" : "text-gray-700"
+                  type === "heard" ? "text-white" : "text-gray-700 dark:text-[#dcddde]"
                 }`}
               >
                 Heard
@@ -307,21 +312,22 @@ export function NewSightingModal({
 
         {/* Notes */}
         <View className="mb-6">
-          <Text className="text-gray-700 mb-2 font-medium">Notes</Text>
+          <Text className="text-gray-700 dark:text-[#b9bbbe] mb-2 font-medium">Notes</Text>
           <BottomSheetTextInput
             style={{
               borderWidth: 1,
-              borderColor: "#d1d5db",
+              borderColor: colors.input.border,
               borderRadius: 8,
               paddingHorizontal: 16,
               paddingVertical: 12,
               fontSize: 16,
-              color: "#111827",
+              color: colors.input.text,
+              backgroundColor: colors.input.background,
               minHeight: 80,
               textAlignVertical: "top",
             }}
             placeholder="Any notes about this sighting..."
-            placeholderTextColor="#9ca3af"
+            placeholderTextColor={colors.input.placeholder}
             value={notes}
             onChangeText={setNotes}
             multiline
@@ -337,8 +343,8 @@ export function NewSightingModal({
           disabled={loading || !selectedSpecies}
           className={`rounded-lg py-4 ${
             loading || !selectedSpecies
-              ? "bg-gray-300"
-              : "bg-gray-900 active:bg-gray-800"
+              ? "bg-gray-300 dark:bg-[#202225]"
+              : "bg-gray-900 dark:bg-[#5865f2] active:bg-gray-800 dark:active:bg-[#4752c4]"
           }`}
         >
           {loading ? (

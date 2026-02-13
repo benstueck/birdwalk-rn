@@ -12,6 +12,7 @@ import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
+import { useTheme } from "../contexts/ThemeContext";
 import type { Lifer } from "../types/database";
 import type { WalksStackParamList } from "../navigation/types";
 import { LiferCard } from "../components/LiferCard";
@@ -29,6 +30,7 @@ export function LifersScreen() {
   const [sortBy, setSortBy] = useState<LiferSortOption>(DEFAULT_LIFER_SORT);
   const [showSortModal, setShowSortModal] = useState(false);
   const { user } = useAuth();
+  const { colors } = useTheme();
   const navigation =
     useNavigation<NativeStackNavigationProp<WalksStackParamList>>();
 
@@ -210,17 +212,17 @@ export function LifersScreen() {
   // Only show full-screen spinner on initial load
   if (loading && lifers.length === 0) {
     return (
-      <View className="flex-1 justify-center items-center bg-gray-50">
-        <ActivityIndicator size="large" color="#111827" />
+      <View className="flex-1 justify-center items-center bg-gray-50 dark:bg-[#36393f]">
+        <ActivityIndicator size="large" color={colors.accent} />
       </View>
     );
   }
 
   return (
-    <View className="flex-1 bg-gray-50">
-      <SafeAreaView edges={["top"]} className="bg-white">
-        <View className="px-4 py-4 border-b border-gray-200 flex-row items-center justify-between">
-          <Text className="text-xl font-semibold text-gray-900">Life List</Text>
+    <View className="flex-1 bg-gray-50 dark:bg-[#36393f]">
+      <SafeAreaView edges={["top"]} className="bg-white dark:bg-[#2f3136]">
+        <View className="px-4 py-4 border-b border-gray-200 dark:border-[#202225] flex-row items-center justify-between">
+          <Text className="text-xl font-semibold text-gray-900 dark:text-[#dcddde]">Life List</Text>
           <SortButton
             sortBy={sortBy}
             defaultSort={DEFAULT_LIFER_SORT}
@@ -229,8 +231,8 @@ export function LifersScreen() {
         </View>
       </SafeAreaView>
 
-      <View className="px-4 pt-4 pb-2 bg-gray-50">
-        <Text className="text-lg font-semibold text-gray-500">{lifers.length} species</Text>
+      <View className="px-4 pt-4 pb-2 bg-gray-50 dark:bg-[#36393f]">
+        <Text className="text-lg font-semibold text-gray-500 dark:text-[#b9bbbe]">{lifers.length} species</Text>
       </View>
 
       <FlatList
@@ -243,8 +245,8 @@ export function LifersScreen() {
         ItemSeparatorComponent={() => <View className="h-3" />}
         ListEmptyComponent={
           <View className="flex-1 justify-center items-center py-20">
-            <Text className="text-gray-500 text-lg mb-2">No species yet</Text>
-            <Text className="text-gray-400 text-center px-8">
+            <Text className="text-gray-500 dark:text-[#b9bbbe] text-lg mb-2">No species yet</Text>
+            <Text className="text-gray-400 dark:text-[#72767d] text-center px-8">
               Add sightings to your walks to build your life list
             </Text>
           </View>
@@ -253,7 +255,7 @@ export function LifersScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            tintColor="#111827"
+            tintColor={colors.accent}
           />
         }
       />

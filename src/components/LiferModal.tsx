@@ -5,6 +5,7 @@ import BottomSheet, {
   BottomSheetScrollView,
 } from "@gorhom/bottom-sheet";
 import { Image } from "expo-image";
+import { useTheme } from "../contexts/ThemeContext";
 import type { Lifer } from "../types/database";
 import {
   fetchBirdImage,
@@ -14,7 +15,6 @@ import {
 } from "../utils/birdImages";
 
 const MAX_IMAGE_HEIGHT = 280;
-const BACKGROUND_COLOR = "#cbd5e1"; // slate-300
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 interface LiferModalProps {
@@ -30,6 +30,7 @@ export function LiferModal({
   onClose,
   onNavigateToWalk,
 }: LiferModalProps) {
+  const { colors } = useTheme();
   const bottomSheetRef = useRef<BottomSheet>(null);
   const visibleRef = useRef(visible);
 
@@ -145,6 +146,8 @@ export function LiferModal({
       backdropComponent={renderBackdrop}
       onChange={handleSheetChanges}
       maxDynamicContentSize={SCREEN_HEIGHT * 0.85}
+      backgroundStyle={{ backgroundColor: colors.surface }}
+      handleIndicatorStyle={{ backgroundColor: colors.text.tertiary }}
     >
       <BottomSheetScrollView>
         {lifer && (
@@ -155,13 +158,13 @@ export function LiferModal({
                 style={{
                   width: SCREEN_WIDTH,
                   height: containerHeight,
-                  backgroundColor: needsHorizontalLetterbox ? BACKGROUND_COLOR : "transparent",
+                  backgroundColor: needsHorizontalLetterbox ? colors.border : "transparent",
                   alignItems: "center",
                   justifyContent: "center",
                 }}
               >
                 {isLoading && !imageUrl ? (
-                  <View style={{ width: "100%", height: "100%", backgroundColor: "#e5e7eb" }} />
+                  <View style={{ width: "100%", height: "100%", backgroundColor: colors.background.secondary }} />
                 ) : imageUrl ? (
                   <Image
                     source={{ uri: imageUrl }}
@@ -176,7 +179,7 @@ export function LiferModal({
                     onLoad={handleImageLoad}
                   />
                 ) : (
-                  <Text className="text-gray-400 text-lg">?</Text>
+                  <Text className="text-gray-400 dark:text-[#72767d] text-lg">?</Text>
                 )}
               </View>
 
@@ -205,8 +208,8 @@ export function LiferModal({
             </View>
 
             {/* Stats Bar */}
-            <View className="px-4 py-3 bg-gray-50 border-b border-gray-100">
-              <Text className="text-sm font-medium text-gray-600">
+            <View className="px-4 py-3 bg-gray-50 dark:bg-[#2f3136] border-b border-gray-100 dark:border-[#202225]">
+              <Text className="text-sm font-medium text-gray-600 dark:text-[#b9bbbe]">
                 {lifer.total_sightings}{" "}
                 {lifer.total_sightings === 1 ? "sighting" : "sightings"}
               </Text>
@@ -214,7 +217,7 @@ export function LiferModal({
 
             {/* Sighting History */}
             <View className="px-4 pt-4">
-              <Text className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-3">
+              <Text className="text-xs font-medium text-gray-400 dark:text-[#72767d] uppercase tracking-wide mb-3">
                 Sighting History
               </Text>
               <View className="gap-2">
@@ -222,13 +225,13 @@ export function LiferModal({
                   <Pressable
                     key={sighting.id}
                     onPress={() => onNavigateToWalk?.(sighting.walk_id)}
-                    className="bg-gray-50 rounded-xl p-3 active:bg-gray-100"
+                    className="bg-gray-50 dark:bg-[#2f3136] rounded-xl p-3 active:bg-gray-100 dark:active:bg-[#202225]"
                   >
                     <View className="flex-row items-center justify-between">
-                      <Text className="font-medium text-gray-900">
+                      <Text className="font-medium text-gray-900 dark:text-[#dcddde]">
                         {sighting.walk_name}
                       </Text>
-                      <Text className="text-sm text-gray-500">
+                      <Text className="text-sm text-gray-500 dark:text-[#72767d]">
                         {formatDate(sighting.walk_date)}
                       </Text>
                     </View>
