@@ -67,10 +67,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const systemColorScheme = useColorScheme();
   const [mode, setMode] = useState<ThemeMode>('system');
 
-  // Debug: Log system color scheme
-  useEffect(() => {
-    console.log('System color scheme from React Native:', systemColorScheme);
-  }, [systemColorScheme]);
 
   // Load saved preference on mount
   useEffect(() => {
@@ -105,14 +101,12 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   // Sync NativeWind when effective theme changes
   useEffect(() => {
-    console.log('Setting color scheme to:', effectiveTheme);
     // Use NativeWind's colorScheme.set() method
     if (mode !== 'system') {
       colorScheme.set(effectiveTheme);
     } else {
       colorScheme.set(undefined); // Follow system
     }
-    console.log('Current color scheme:', colorScheme.get());
   }, [effectiveTheme, mode]);
 
   const colors = effectiveTheme === 'dark' ? darkColors : lightColors;
