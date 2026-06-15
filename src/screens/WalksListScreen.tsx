@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -6,6 +6,9 @@ import {
   Pressable,
   RefreshControl,
   ActivityIndicator,
+  Animated,
+  Keyboard,
+  Easing,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect } from "@react-navigation/native";
@@ -20,6 +23,7 @@ import { SortButton } from "../components/SortButton";
 import { SortBottomSheet } from "../components/SortBottomSheet";
 import { SortOption, DEFAULT_SORT } from "../types/sort";
 import { SearchBar } from "../components/SearchBar";
+import { FABButton } from "../components/FABButton";
 import { useSearch } from "../hooks/useSearch";
 
 type WalkWithCount = Walk & { sightings: { count: number }[] };
@@ -36,6 +40,33 @@ export function WalksListScreen({
   const { user } = useAuth();
   const { colors } = useTheme();
   const { query, setQuery, results, loading: searchLoading } = useSearch();
+  const containerRef = useRef<View>(null);
+  const bottomAnim = useRef(new Animated.Value(24)).current;
+
+  React.useEffect(() => {
+    const show = Keyboard.addListener("keyboardWillShow", (e) => {
+      containerRef.current?.measureInWindow((_x, y, _w, height) => {
+        const containerBottom = y + height;
+        const keyboardTop = e.endCoordinates.screenY;
+        const overlap = containerBottom - keyboardTop;
+        Animated.timing(bottomAnim, {
+          toValue: 24 + overlap,
+          duration: e.duration,
+          easing: Easing.bezier(0.17, 0.59, 0.4, 0.77),
+          useNativeDriver: false,
+        }).start();
+      });
+    });
+    const hide = Keyboard.addListener("keyboardWillHide", (e) => {
+      Animated.timing(bottomAnim, {
+        toValue: 24,
+        duration: e.duration,
+        easing: Easing.bezier(0.17, 0.59, 0.4, 0.77),
+        useNativeDriver: false,
+      }).start();
+    });
+    return () => { show.remove(); hide.remove(); };
+  }, []);
 
 
   const fetchWalks = async () => {
@@ -91,7 +122,7 @@ export function WalksListScreen({
   }
 
   return (
-    <View className="flex-1 bg-gray-50 dark:bg-[#36393f]">
+    <View ref={containerRef} className="flex-1 bg-gray-50 dark:bg-[#36393f]">
       <SafeAreaView edges={["top"]} className="bg-white dark:bg-[#2f3136]">
         <View className="px-4 py-4 border-b border-gray-200 dark:border-[#202225] flex-row items-center justify-between">
           <Text className="text-xl font-semibold text-gray-900 dark:text-[#dcddde]">BirdWalk</Text>
@@ -129,7 +160,8 @@ export function WalksListScreen({
         }
       />
 
-      <View className="absolute bottom-6 left-4 right-4 flex-row items-center gap-3">
+      <Animated.View style={{ position: 'absolute', bottom: bottomAnim, left: 16, right: 16 }}>
+      <View className="flex-row items-center gap-3">
         <SearchBar
           value={query}
           onChangeText={setQuery}
@@ -146,13 +178,9 @@ export function WalksListScreen({
           loading={searchLoading}
         />
 
-        <Pressable
-          onPress={() => setShowNewWalkModal(true)}
-          className="w-14 h-14 bg-gray-900 dark:bg-[#5865f2] rounded-full justify-center items-center shadow-lg active:bg-gray-800 dark:active:bg-[#4752c4]"
-        >
-          <Text className="text-white text-3xl font-light">+</Text>
-        </Pressable>
+        <FABButton onPress={() => setShowNewWalkModal(true)} />
       </View>
+      </Animated.View>
 
       <NewWalkModal
         visible={showNewWalkModal}

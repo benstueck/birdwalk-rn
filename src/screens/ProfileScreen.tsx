@@ -13,6 +13,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 import { useTheme } from "../contexts/ThemeContext";
+import { getAvatarEmoji } from "../utils/avatars";
 
 interface Stats {
   totalWalks: number;
@@ -23,7 +24,7 @@ interface Stats {
 type ThemeMode = 'light' | 'dark' | 'system';
 
 export function ProfileScreen() {
-  const { user, signOut } = useAuth();
+  const { user, profile, signOut } = useAuth();
   const { mode, effectiveTheme, setThemeMode, colors } = useTheme();
   const [stats, setStats] = useState<Stats>({
     totalWalks: 0,
@@ -38,7 +39,7 @@ export function ProfileScreen() {
 
     const [walksResult, sightingsResult] = await Promise.all([
       supabase
-        .from("walks")
+        .from("walk_collaborators")
         .select("id", { count: "exact" })
         .eq("user_id", user.id),
       supabase
@@ -47,10 +48,10 @@ export function ProfileScreen() {
           `
           id,
           species_code,
-          walks!inner (user_id)
+          walks!inner (walk_collaborators!inner (user_id))
         `
         )
-        .eq("walks.user_id", user.id),
+        .eq("walks.walk_collaborators.user_id", user.id),
     ]);
 
     const totalWalks = walksResult.count || 0;
@@ -118,14 +119,27 @@ export function ProfileScreen() {
     >
       {/* Profile Header */}
       <View className="bg-white dark:bg-[#2f3136] p-6 border-b border-gray-200 dark:border-[#202225]">
-        <View className="w-20 h-20 bg-gray-200 dark:bg-[#202225] rounded-full justify-center items-center mx-auto mb-4">
-          <Text className="text-3xl text-gray-600 dark:text-[#72767d]">
-            {user?.email?.charAt(0).toUpperCase() || "?"}
+        <View className="w-20 h-20 bg-gray-100 dark:bg-[#202225] rounded-full justify-center items-center mx-auto mb-4">
+          <Text style={{ fontSize: 40 }}>
+            {getAvatarEmoji(profile?.avatar_id)}
           </Text>
         </View>
-        <Text className="text-xl font-semibold text-center text-gray-800 dark:text-[#dcddde]">
-          {user?.email}
-        </Text>
+        {profile ? (
+          <>
+            <Text className="text-xl font-bold text-center text-gray-900 dark:text-[#dcddde]">
+              @{profile.username}
+            </Text>
+            {profile.bio ? (
+              <Text className="text-sm text-center text-gray-600 dark:text-[#b9bbbe] mt-2">
+                {profile.bio}
+              </Text>
+            ) : null}
+          </>
+        ) : (
+          <Text className="text-base text-center text-gray-500 dark:text-[#72767d]">
+            {user?.email}
+          </Text>
+        )}
       </View>
 
       {/* Stats Section */}

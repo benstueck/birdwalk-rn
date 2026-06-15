@@ -31,14 +31,15 @@ export function SearchBar({
   loading,
 }: SearchBarProps) {
   const { colors } = useTheme();
-  const showDropdown = value.length >= 2 && results.length > 0;
+  const [isFocused, setIsFocused] = React.useState(false);
+  const showDropdown = isFocused && value.length >= 2 && results.length > 0;
 
   return (
     <View className="flex-1">
       {showDropdown && (
         <View
           testID="search-dropdown"
-          className="absolute bottom-full left-0 right-0 mb-2 bg-white dark:bg-[#2f3136] rounded-2xl shadow-lg max-h-60 border border-gray-200 dark:border-[#202225] overflow-hidden"
+          className="absolute bottom-full left-0 right-0 mb-2 bg-white dark:bg-[#2f3136] rounded-2xl shadow-lg max-h-60 border border-[#5865f2] overflow-hidden"
         >
           <ScrollView keyboardShouldPersistTaps="handled">
             {results.slice(0, 5).map((result, index) => (
@@ -78,7 +79,7 @@ export function SearchBar({
         </View>
       )}
 
-      <View className="flex-row items-center bg-white dark:bg-[#2f3136] px-5 h-14 shadow-sm rounded-full">
+      <View className="flex-row items-center bg-white dark:bg-[#40444b] px-5 h-14 shadow-sm rounded-full border border-[#5865f2]">
         <TextInput
           value={value}
           onChangeText={onChangeText}
@@ -90,6 +91,8 @@ export function SearchBar({
             fontSize: 16,
             color: colors.text.primary,
           }}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
           returnKeyType="search"
           autoCorrect={false}
           autoCapitalize="none"

@@ -110,7 +110,7 @@ export function WalkOptionsButton({ onEdit, onDelete }: WalkOptionsButtonProps) 
       {/* Main FAB */}
       <Pressable
         onPress={() => setIsOpen(!isOpen)}
-        className="w-14 h-14 bg-white dark:bg-[#2f3136] rounded-full justify-center items-center shadow-lg active:bg-gray-100 dark:active:bg-[#202225]"
+        className="w-14 h-14 bg-white dark:bg-[#40444b] rounded-full justify-center items-center shadow-lg active:bg-gray-100 dark:active:bg-[#202225] border border-[#5865f2]"
       >
         <Ionicons
           name={isOpen ? "close" : "ellipsis-horizontal"}

@@ -20,6 +20,7 @@ import { NewSightingModal } from "../components/NewSightingModal";
 import { SightingModal } from "../components/SightingModal";
 import { WalkOptionsButton } from "../components/WalkOptionsButton";
 import { EditWalkModal } from "../components/EditWalkModal";
+import { FABButton } from "../components/FABButton";
 
 export function WalkDetailScreen({
   route,
@@ -222,12 +223,10 @@ export function WalkDetailScreen({
         onDelete={handleDeleteWalk}
       />
 
-      <Pressable
+      <FABButton
         onPress={() => setShowNewSightingModal(true)}
-        className="absolute bottom-6 right-6 w-14 h-14 bg-gray-900 dark:bg-[#5865f2] rounded-full justify-center items-center shadow-lg active:bg-gray-800 dark:active:bg-[#4752c4]"
-      >
-        <Text className="text-white text-3xl font-light">+</Text>
-      </Pressable>
+        className="absolute bottom-6 right-6"
+      />
 
       <NewSightingModal
         visible={showNewSightingModal}

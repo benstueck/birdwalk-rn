@@ -6,9 +6,10 @@ import { useTheme } from "../contexts/ThemeContext";
 import { LightNavigationTheme, DarkNavigationTheme } from "../theme/navigation";
 import { AuthNavigator } from "./AuthNavigator";
 import { MainNavigator } from "./MainNavigator";
+import { ProfileSetupScreen } from "../screens/ProfileSetupScreen";
 
 export function RootNavigator() {
-  const { user, loading } = useAuth();
+  const { user, profile, loading } = useAuth();
   const { effectiveTheme, colors } = useTheme();
 
   const navigationTheme = useMemo(
@@ -26,7 +27,13 @@ export function RootNavigator() {
 
   return (
     <NavigationContainer theme={navigationTheme}>
-      {user ? <MainNavigator /> : <AuthNavigator />}
+      {!user ? (
+        <AuthNavigator />
+      ) : !profile ? (
+        <ProfileSetupScreen />
+      ) : (
+        <MainNavigator />
+      )}
     </NavigationContainer>
   );
 }
