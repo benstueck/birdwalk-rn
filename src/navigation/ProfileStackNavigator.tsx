@@ -26,7 +26,7 @@ export function ProfileStackNavigator() {
       <Stack.Screen
         name="Inbox"
         component={InboxScreen}
-        options={{ title: "Inbox" }}
+        options={{ title: "" }}
       />
     </Stack.Navigator>
   );

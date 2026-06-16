@@ -38,6 +38,7 @@ export function ProfileScreen() {
   });
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const hasLoaded = React.useRef(false);
 
   const fetchStats = async () => {
     if (!user) return;
@@ -70,10 +71,11 @@ export function ProfileScreen() {
     setStats({ totalWalks, totalSightings, uniqueSpecies });
   };
 
-  const loadStats = async () => {
-    setLoading(true);
+  const loadStats = async (showSpinner = true) => {
+    if (showSpinner) setLoading(true);
     await fetchStats();
     setLoading(false);
+    hasLoaded.current = true;
   };
 
   const onRefresh = async () => {
@@ -84,7 +86,7 @@ export function ProfileScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      loadStats();
+      loadStats(!hasLoaded.current);
     }, [user])
   );
 
