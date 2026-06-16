@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -8,7 +8,7 @@ import {
   Alert,
   RefreshControl,
 } from "react-native";
-import { useFocusEffect } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "../contexts/ThemeContext";
 import { getAvatarEmoji } from "../utils/avatars";
@@ -26,8 +26,20 @@ function daysUntil(isoDate: string): number {
 
 export function InboxScreen() {
   const { colors } = useTheme();
+  const navigation = useNavigation();
   const [invitations, setInvitations] = useState<InvitationListItem[]>([]);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    navigation.setOptions({
+      headerBackVisible: false,
+      headerLeft: () => (
+        <Pressable onPress={() => navigation.goBack()} hitSlop={16} style={{ marginLeft: 3 }}>
+          <Ionicons name="chevron-back" size={28} color={colors.text.primary} />
+        </Pressable>
+      ),
+    });
+  }, [navigation, colors]);
   const [refreshing, setRefreshing] = useState(false);
   const [actioning, setActioning] = useState<string | null>(null);
 
