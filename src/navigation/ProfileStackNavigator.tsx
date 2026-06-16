@@ -16,13 +16,12 @@ export function ProfileStackNavigator() {
         headerStyle: { backgroundColor: colors.card },
         headerTintColor: colors.text,
         headerTitleStyle: { fontWeight: "600" },
-        headerBackTitle: "",
       }}
     >
       <Stack.Screen
         name="ProfileHome"
         component={ProfileScreen}
-        options={{ title: "Profile" }}
+        options={{ headerShown: false }}
       />
       <Stack.Screen
         name="Inbox"
