@@ -8,6 +8,7 @@ import {
   ScrollView,
   RefreshControl,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -114,16 +115,22 @@ export function ProfileScreen() {
   }
 
   return (
-    <ScrollView
-      className="flex-1 bg-gray-50 dark:bg-[#36393f]"
-      refreshControl={
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={onRefresh}
-          tintColor={colors.accent}
-        />
-      }
-    >
+    <View className="flex-1 bg-gray-50 dark:bg-[#36393f]">
+      <SafeAreaView edges={["top"]} className="bg-white dark:bg-[#2f3136]">
+        <View className="px-4 py-4 border-b border-gray-200 dark:border-[#202225] flex-row items-center justify-between">
+          <Text className="text-xl font-semibold text-gray-900 dark:text-[#dcddde]">Profile</Text>
+        </View>
+      </SafeAreaView>
+      <ScrollView
+        className="flex-1 bg-gray-50 dark:bg-[#36393f]"
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={colors.accent}
+          />
+        }
+      >
       {/* Profile Header */}
       <View className="bg-white dark:bg-[#2f3136] p-6 border-b border-gray-200 dark:border-[#202225]">
         <View className="w-20 h-20 bg-gray-100 dark:bg-[#202225] rounded-full justify-center items-center mx-auto mb-4">
@@ -293,6 +300,7 @@ export function ProfileScreen() {
           </Text>
         </Pressable>
       </View>
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
