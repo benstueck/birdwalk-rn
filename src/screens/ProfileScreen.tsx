@@ -119,6 +119,18 @@ export function ProfileScreen() {
       <SafeAreaView edges={["top"]} className="bg-white dark:bg-[#2f3136]">
         <View className="px-4 py-4 border-b border-gray-200 dark:border-[#202225] flex-row items-center justify-between">
           <Text className="text-xl font-semibold text-gray-900 dark:text-[#dcddde]">Profile</Text>
+          <Pressable
+            onPress={() => navigation.navigate("Inbox")}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            className="p-2"
+          >
+            <View className="relative">
+              <Ionicons name="mail-outline" size={24} color={colors.text.secondary} />
+              {invitationCount > 0 && (
+                <View className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-blue-600 dark:bg-[#5865f2]" />
+              )}
+            </View>
+          </Pressable>
         </View>
       </SafeAreaView>
       <ScrollView
@@ -155,24 +167,6 @@ export function ProfileScreen() {
           </Text>
         )}
 
-        {/* Inbox button */}
-        <Pressable
-          onPress={() => navigation.navigate("Inbox")}
-          className="flex-row items-center justify-between mt-5 bg-gray-50 dark:bg-[#202225] rounded-xl px-4 py-3 active:bg-gray-100 dark:active:bg-[#18191c]"
-        >
-          <View className="flex-row items-center gap-3">
-            <Ionicons name="mail-outline" size={20} color={colors.text.primary} />
-            <Text className="text-base font-medium text-gray-800 dark:text-[#dcddde]">Inbox</Text>
-          </View>
-          <View className="flex-row items-center gap-2">
-            {invitationCount > 0 && (
-              <View className="bg-blue-600 dark:bg-[#5865f2] rounded-full min-w-[22px] h-[22px] items-center justify-center px-1.5">
-                <Text className="text-white text-xs font-bold">{invitationCount}</Text>
-              </View>
-            )}
-            <Ionicons name="chevron-forward" size={16} color="#72767d" />
-          </View>
-        </Pressable>
       </View>
 
       {/* Stats Section */}
