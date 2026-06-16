@@ -16,6 +16,7 @@ export function ProfileStackNavigator() {
         headerStyle: { backgroundColor: colors.card },
         headerTintColor: colors.text,
         headerTitleStyle: { fontWeight: "600" },
+        headerBackTitle: "",
       }}
     >
       <Stack.Screen
@@ -26,7 +27,7 @@ export function ProfileStackNavigator() {
       <Stack.Screen
         name="Inbox"
         component={InboxScreen}
-        options={{ title: "" }}
+        options={{ title: "Inbox" }}
       />
     </Stack.Navigator>
   );
