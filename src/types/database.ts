@@ -212,13 +212,13 @@ export interface Database {
             referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "walk_invitations_inviter_id_fkey";
+            foreignKeyName: "walk_invitations_inviter_id_fkey2";
             columns: ["inviter_id"];
             referencedRelation: "profiles";
             referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "walk_invitations_invitee_id_fkey";
+            foreignKeyName: "walk_invitations_invitee_id_fkey2";
             columns: ["invitee_id"];
             referencedRelation: "profiles";
             referencedColumns: ["id"];

@@ -37,7 +37,7 @@ export async function getPendingInvitations(): Promise<InvitationListItem[]> {
       created_at,
       expires_at,
       walks ( name, date ),
-      inviter:profiles!walk_invitations_inviter_id_fkey ( id, username, display_name, avatar_id )
+      inviter:profiles!walk_invitations_inviter_id_fkey2 ( id, username, display_name, avatar_id )
     `)
     .eq("invitee_id", user.id)
     .eq("status", "pending")
