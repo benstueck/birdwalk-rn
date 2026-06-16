@@ -9,11 +9,14 @@ import {
   RefreshControl,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useFocusEffect } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 import { useTheme } from "../contexts/ThemeContext";
 import { getAvatarEmoji } from "../utils/avatars";
+import { useInvitationCount } from "../hooks/useInvitationCount";
+import type { ProfileStackParamList } from "../navigation/types";
 
 interface Stats {
   totalWalks: number;
@@ -26,6 +29,8 @@ type ThemeMode = 'light' | 'dark' | 'system';
 export function ProfileScreen() {
   const { user, profile, signOut } = useAuth();
   const { mode, effectiveTheme, setThemeMode, colors } = useTheme();
+  const navigation = useNavigation<NativeStackNavigationProp<ProfileStackParamList>>();
+  const { count: invitationCount } = useInvitationCount();
   const [stats, setStats] = useState<Stats>({
     totalWalks: 0,
     totalSightings: 0,
@@ -140,6 +145,25 @@ export function ProfileScreen() {
             {user?.email}
           </Text>
         )}
+
+        {/* Inbox button */}
+        <Pressable
+          onPress={() => navigation.navigate("Inbox")}
+          className="flex-row items-center justify-between mt-5 bg-gray-50 dark:bg-[#202225] rounded-xl px-4 py-3 active:bg-gray-100 dark:active:bg-[#18191c]"
+        >
+          <View className="flex-row items-center gap-3">
+            <Ionicons name="mail-outline" size={20} color={colors.text.primary} />
+            <Text className="text-base font-medium text-gray-800 dark:text-[#dcddde]">Inbox</Text>
+          </View>
+          <View className="flex-row items-center gap-2">
+            {invitationCount > 0 && (
+              <View className="bg-blue-600 dark:bg-[#5865f2] rounded-full min-w-[22px] h-[22px] items-center justify-center px-1.5">
+                <Text className="text-white text-xs font-bold">{invitationCount}</Text>
+              </View>
+            )}
+            <Ionicons name="chevron-forward" size={16} color="#72767d" />
+          </View>
+        </Pressable>
       </View>
 
       {/* Stats Section */}

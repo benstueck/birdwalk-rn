@@ -16,6 +16,12 @@ export type WalksStackParamList = {
   Search: { initialQuery?: string };
 };
 
+// Profile Stack (nested in Main Tab)
+export type ProfileStackParamList = {
+  ProfileHome: undefined;
+  Inbox: undefined;
+};
+
 // Main Tab Navigator
 export type MainTabParamList = {
   Walks: undefined;
