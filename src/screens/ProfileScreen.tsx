@@ -16,7 +16,7 @@ import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 import { useTheme } from "../contexts/ThemeContext";
 import { getAvatarEmoji } from "../utils/avatars";
-import { useInvitationCount } from "../hooks/useInvitationCount";
+import { useInvitationCount } from "../contexts/InvitationCountContext";
 import type { ProfileStackParamList } from "../navigation/types";
 
 interface Stats {
@@ -279,6 +279,48 @@ export function ProfileScreen() {
             {mode === 'system' && (
               <Ionicons name="checkmark-circle" size={24} color="#5865f2" />
             )}
+          </Pressable>
+        </View>
+      </View>
+
+      {/* Edit Profile */}
+      <View className="px-4 pb-0">
+        <Text className="text-lg font-semibold text-gray-800 dark:text-[#dcddde] mb-3">
+          Profile
+        </Text>
+        <View className="bg-white dark:bg-[#2f3136] rounded-lg overflow-hidden">
+          <Pressable
+            onPress={() => navigation.navigate("EditProfile")}
+            className="flex-row items-center p-4 active:bg-gray-50 dark:active:bg-[#202225]"
+          >
+            <View className="w-10 h-10 bg-gray-100 dark:bg-[#202225] rounded-full items-center justify-center mr-3">
+              <Ionicons name="person-outline" size={20} color={colors.text.secondary} />
+            </View>
+            <Text className="flex-1 text-base font-medium text-gray-900 dark:text-[#dcddde]">
+              Edit Profile
+            </Text>
+            <Ionicons name="chevron-forward" size={18} color={colors.text.secondary} />
+          </Pressable>
+        </View>
+      </View>
+
+      {/* Account Settings */}
+      <View className="p-4">
+        <Text className="text-lg font-semibold text-gray-800 dark:text-[#dcddde] mb-3">
+          Account
+        </Text>
+        <View className="bg-white dark:bg-[#2f3136] rounded-lg overflow-hidden">
+          <Pressable
+            onPress={() => navigation.navigate("AccountSettings")}
+            className="flex-row items-center p-4 active:bg-gray-50 dark:active:bg-[#202225]"
+          >
+            <View className="w-10 h-10 bg-gray-100 dark:bg-[#202225] rounded-full items-center justify-center mr-3">
+              <Ionicons name="lock-closed-outline" size={20} color={colors.text.secondary} />
+            </View>
+            <Text className="flex-1 text-base font-medium text-gray-900 dark:text-[#dcddde]">
+              Account Settings
+            </Text>
+            <Ionicons name="chevron-forward" size={18} color={colors.text.secondary} />
           </Pressable>
         </View>
       </View>

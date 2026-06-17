@@ -20,6 +20,8 @@ export type WalksStackParamList = {
 export type ProfileStackParamList = {
   ProfileHome: undefined;
   Inbox: undefined;
+  EditProfile: undefined;
+  AccountSettings: undefined;
 };
 
 // Main Tab Navigator
