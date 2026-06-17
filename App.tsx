@@ -9,6 +9,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { AuthProvider } from "./src/contexts/AuthContext";
 import { ThemeProvider } from "./src/contexts/ThemeContext";
 import { InvitationCountProvider } from "./src/contexts/InvitationCountContext";
+import { OfflineProvider } from "./src/contexts/OfflineContext";
 import { RootNavigator } from "./src/navigation";
 
 export default function App() {
@@ -17,10 +18,12 @@ export default function App() {
       <SafeAreaProvider>
         <ThemeProvider>
           <AuthProvider>
-            <InvitationCountProvider>
-              <RootNavigator />
-              <StatusBar style="auto" />
-            </InvitationCountProvider>
+            <OfflineProvider>
+              <InvitationCountProvider>
+                <RootNavigator />
+                <StatusBar style="auto" />
+              </InvitationCountProvider>
+            </OfflineProvider>
           </AuthProvider>
         </ThemeProvider>
       </SafeAreaProvider>
