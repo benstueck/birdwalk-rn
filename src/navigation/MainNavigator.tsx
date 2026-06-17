@@ -1,11 +1,12 @@
 import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { useTheme as useNavigationTheme } from "@react-navigation/native";
+import { View } from "react-native";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { WalksStackNavigator } from "./WalksStackNavigator";
 import { LifersScreen } from "../screens/LifersScreen";
 import { ProfileStackNavigator } from "./ProfileStackNavigator";
-import { useInvitationCount } from "../hooks/useInvitationCount";
+import { useInvitationCount } from "../contexts/InvitationCountContext";
 import type { MainTabParamList } from "./types";
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
@@ -58,9 +59,21 @@ export function MainNavigator() {
         component={ProfileStackNavigator}
         options={{
           headerShown: false,
-          tabBarBadge: invitationCount > 0 ? invitationCount : undefined,
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="person" size={size} color={color} />
+            <View style={{ position: "relative" }}>
+              <Ionicons name="person" size={size} color={color} />
+              {invitationCount > 0 && (
+                <View style={{
+                  position: "absolute",
+                  top: -1,
+                  right: -3,
+                  width: 8,
+                  height: 8,
+                  borderRadius: 4,
+                  backgroundColor: "#5865f2",
+                }} />
+              )}
+            </View>
           ),
         }}
       />

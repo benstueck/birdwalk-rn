@@ -14,7 +14,6 @@ import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 import { useTheme } from "../contexts/ThemeContext";
 import type { Lifer } from "../types/database";
-import type { WalksStackParamList } from "../navigation/types";
 import { LiferCard } from "../components/LiferCard";
 import { LiferModal } from "../components/LiferModal";
 import { SortButton } from "../components/SortButton";
@@ -31,8 +30,7 @@ export function LifersScreen() {
   const [showSortModal, setShowSortModal] = useState(false);
   const { user } = useAuth();
   const { colors } = useTheme();
-  const navigation =
-    useNavigation<NativeStackNavigationProp<WalksStackParamList>>();
+  const navigation = useNavigation<any>();
 
   const handleLiferPress = (lifer: Lifer) => {
     setSelectedLifer(lifer);
@@ -47,7 +45,7 @@ export function LifersScreen() {
   const handleNavigateToWalk = (walkId: string) => {
     setShowModal(false);
     setSelectedLifer(null);
-    navigation.navigate("WalkDetail", { walkId });
+    navigation.navigate("Walks", { screen: "WalkDetail", params: { walkId } });
   };
 
   // Load saved sort preference
@@ -92,11 +90,11 @@ export function LifersScreen() {
           id,
           name,
           date,
-          user_id
+          walk_collaborators!inner ( user_id )
         )
       `
       )
-      .eq("walks.user_id", user.id)
+      .eq("walks.walk_collaborators.user_id", user.id)
       .order("timestamp", { ascending: false });
 
     if (error) {

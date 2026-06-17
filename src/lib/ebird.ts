@@ -93,8 +93,8 @@ export async function searchSpeciesCached(
       taxonomyCache = await response.json();
     }
 
-    // Filter cached species by query
-    const queryLower = query.toLowerCase();
+    // Normalise smart quotes/apostrophes typed by iOS autocorrect
+    const queryLower = query.toLowerCase().replace(/[‘’ʼ]/g, "'");
     return (taxonomyCache || [])
       .filter(
         (species) =>

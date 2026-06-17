@@ -7,10 +7,12 @@ import type { Sighting } from "../types/database";
 
 interface SightingCardProps {
   sighting: Sighting;
+  creatorName?: string;
+  showCreator?: boolean;
   onPress?: () => void;
 }
 
-export function SightingCard({ sighting, onPress }: SightingCardProps) {
+export function SightingCard({ sighting, creatorName, showCreator, onPress }: SightingCardProps) {
   const { colors } = useTheme();
 
   return (
@@ -24,9 +26,16 @@ export function SightingCard({ sighting, onPress }: SightingCardProps) {
           scientificName={sighting.scientific_name}
           size="md"
         />
-        <Text className="font-medium text-gray-900 dark:text-[#dcddde] flex-1 ml-4">
-          {sighting.species_name}
-        </Text>
+        <View className="flex-1 ml-4">
+          <Text className="font-medium text-gray-900 dark:text-[#dcddde]">
+            {sighting.species_name}
+          </Text>
+          {showCreator && creatorName && (
+            <Text className="text-xs text-gray-400 dark:text-[#72767d] mt-0.5">
+              Added by {creatorName}
+            </Text>
+          )}
+        </View>
         <Ionicons
           name={sighting.type === "seen" ? "eye-outline" : "ear-outline"}
           size={20}

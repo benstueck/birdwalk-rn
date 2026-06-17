@@ -11,6 +11,7 @@ import {
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "../contexts/ThemeContext";
+import { useInvitationCount } from "../contexts/InvitationCountContext";
 import { getAvatarEmoji } from "../utils/avatars";
 import {
   getPendingInvitations,
@@ -26,6 +27,7 @@ function daysUntil(isoDate: string): number {
 
 export function InboxScreen() {
   const { colors } = useTheme();
+  const { refresh: refreshCount, clear: clearCount } = useInvitationCount();
   const navigation = useNavigation();
   const [invitations, setInvitations] = useState<InvitationListItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -54,6 +56,7 @@ export function InboxScreen() {
 
   useFocusEffect(
     useCallback(() => {
+      clearCount();
       setLoading(true);
       load().finally(() => setLoading(false));
     }, [])
@@ -70,6 +73,7 @@ export function InboxScreen() {
     try {
       await acceptInvitation(item.id);
       setInvitations((prev) => prev.filter((i) => i.id !== item.id));
+      refreshCount();
       Alert.alert("Joined!", `You've joined "${item.walk_name}".`);
     } catch (e: any) {
       Alert.alert("Error", e.message ?? "Could not accept invitation.");
@@ -92,6 +96,7 @@ export function InboxScreen() {
             try {
               await declineInvitation(item.id);
               setInvitations((prev) => prev.filter((i) => i.id !== item.id));
+              refreshCount();
             } catch (e: any) {
               Alert.alert("Error", e.message ?? "Could not decline invitation.");
             } finally {
@@ -157,7 +162,7 @@ export function InboxScreen() {
               {item.walk_name}
             </Text>
             <Text className="text-sm text-gray-500 dark:text-[#72767d] mb-1">
-              {new Date(item.walk_date).toLocaleDateString(undefined, {
+              {new Date(`${item.walk_date}T00:00:00`).toLocaleDateString(undefined, {
                 weekday: "long",
                 month: "long",
                 day: "numeric",

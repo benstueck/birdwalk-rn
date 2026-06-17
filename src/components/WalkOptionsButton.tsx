@@ -6,9 +6,10 @@ import { useTheme } from "../contexts/ThemeContext";
 interface WalkOptionsButtonProps {
   onEdit: () => void;
   onDelete: () => void;
+  onInvite?: () => void;
 }
 
-export function WalkOptionsButton({ onEdit, onDelete }: WalkOptionsButtonProps) {
+export function WalkOptionsButton({ onEdit, onDelete, onInvite }: WalkOptionsButtonProps) {
   const { colors } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
   const animation = useRef(new Animated.Value(0)).current;
@@ -21,90 +22,38 @@ export function WalkOptionsButton({ onEdit, onDelete }: WalkOptionsButtonProps) 
     }).start();
   }, [isOpen]);
 
-  const handleEdit = () => {
-    setIsOpen(false);
-    onEdit();
-  };
+  const handleEdit = () => { setIsOpen(false); onEdit(); };
+  const handleDelete = () => { setIsOpen(false); onDelete(); };
+  const handleInvite = () => { setIsOpen(false); onInvite?.(); };
 
-  const handleDelete = () => {
-    setIsOpen(false);
-    onDelete();
-  };
-
-  // Animation values for the speed dial items
-  const editTranslateY = animation.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, -60],
-  });
-
-  const deleteTranslateY = animation.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, -82],
-  });
-
-  const itemOpacity = animation.interpolate({
-    inputRange: [0, 0.5, 1],
-    outputRange: [0, 0, 1],
-  });
-
+  const menuOpacity = animation.interpolate({ inputRange: [0, 0.5, 1], outputRange: [0, 0, 1] });
+  const menuScale = animation.interpolate({ inputRange: [0, 1], outputRange: [0.8, 1] });
+  const menuTranslateY = animation.interpolate({ inputRange: [0, 1], outputRange: [20, 0] });
 
   return (
     <View className="absolute bottom-6 left-6">
-      {/* Backdrop when open */}
+      {/* Backdrop */}
       {isOpen && (
         <Pressable
-          className="fixed inset-0 w-screen h-screen"
           style={{ position: "absolute", top: -1000, left: -24, width: 2000, height: 2000 }}
           onPress={() => setIsOpen(false)}
         />
       )}
 
-      {/* Delete action (appears higher) */}
+      {/* Items column */}
       <Animated.View
         style={{
-          position: "absolute",
-          bottom: 0,
-          left: 0,
-          transform: [{ translateY: deleteTranslateY }],
-          opacity: itemOpacity,
+          marginBottom: 12,
+          opacity: menuOpacity,
+          transform: [{ scale: menuScale }, { translateY: menuTranslateY }],
         }}
         pointerEvents={isOpen ? "auto" : "none"}
       >
-        <Pressable
-          onPress={handleDelete}
-          className="flex-row items-center"
-        >
-          <View className="bg-white dark:bg-[#2f3136] rounded-lg px-3 py-2 mr-3 shadow">
-            <Text className="text-red-500 dark:text-[#ed4245] font-medium">Delete</Text>
-          </View>
-          <View className="w-11 h-11 bg-white dark:bg-[#2f3136] rounded-full justify-center items-center shadow">
-            <Ionicons name="trash" size={20} color={colors.destructive} />
-          </View>
-        </Pressable>
-      </Animated.View>
-
-      {/* Edit action */}
-      <Animated.View
-        style={{
-          position: "absolute",
-          bottom: 0,
-          left: 0,
-          transform: [{ translateY: editTranslateY }],
-          opacity: itemOpacity,
-        }}
-        pointerEvents={isOpen ? "auto" : "none"}
-      >
-        <Pressable
-          onPress={handleEdit}
-          className="flex-row items-center"
-        >
-          <View className="bg-white dark:bg-[#2f3136] rounded-lg px-3 py-2 mr-3 shadow">
-            <Text className="text-gray-700 dark:text-[#dcddde] font-medium">Edit</Text>
-          </View>
-          <View className="w-11 h-11 bg-white dark:bg-[#2f3136] rounded-full justify-center items-center shadow">
-            <Ionicons name="pencil" size={20} color={colors.text.secondary} />
-          </View>
-        </Pressable>
+        <DialItem label="Delete" icon="trash" color={colors.destructive} labelColor="#ef4444" onPress={handleDelete} />
+        <DialItem label="Edit" icon="pencil" color={colors.text.secondary} onPress={handleEdit} />
+        {onInvite && (
+          <DialItem label="Invite" icon="person-add-outline" color={colors.text.secondary} onPress={handleInvite} />
+        )}
       </Animated.View>
 
       {/* Main FAB */}
@@ -119,5 +68,31 @@ export function WalkOptionsButton({ onEdit, onDelete }: WalkOptionsButtonProps) 
         />
       </Pressable>
     </View>
+  );
+}
+
+function DialItem({
+  label,
+  icon,
+  color,
+  labelColor,
+  onPress,
+}: {
+  label: string;
+  icon: any;
+  color: string;
+  labelColor?: string;
+  onPress: () => void;
+}) {
+  const { colors } = useTheme();
+  return (
+    <Pressable onPress={onPress} className="flex-row items-center mb-3">
+      <View className="bg-white dark:bg-[#2f3136] rounded-lg px-3 py-2 mr-3 shadow">
+        <Text style={{ color: labelColor ?? colors.text.primary }} className="font-medium">{label}</Text>
+      </View>
+      <View className="w-11 h-11 bg-white dark:bg-[#2f3136] rounded-full justify-center items-center shadow">
+        <Ionicons name={icon} size={20} color={color} />
+      </View>
+    </Pressable>
   );
 }

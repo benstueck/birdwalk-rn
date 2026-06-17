@@ -1,14 +1,22 @@
 import React from "react";
 import { View, Text, Pressable } from "react-native";
 import type { Walk } from "../types/database";
+import { CollaboratorAvatars } from "./CollaboratorAvatars";
+
+interface Collaborator {
+  user_id: string;
+  avatar_id: number;
+  display_name: string;
+}
 
 interface WalkCardProps {
   walk: Walk;
   sightingsCount: number;
+  collaborators?: Collaborator[];
   onPress: () => void;
 }
 
-export function WalkCard({ walk, sightingsCount, onPress }: WalkCardProps) {
+export function WalkCard({ walk, sightingsCount, collaborators = [], onPress }: WalkCardProps) {
   const formatDate = (dateStr: string, timeStr: string) => {
     const date = new Date(`${dateStr}T${timeStr}`);
     const formattedDate = date.toLocaleDateString("en-US", {
@@ -42,6 +50,11 @@ export function WalkCard({ walk, sightingsCount, onPress }: WalkCardProps) {
           {sightingsCount} {sightingsCount === 1 ? "Bird" : "Birds"}
         </Text>
       </View>
+      {collaborators.length > 1 && (
+        <View className="flex-row items-center mt-2 gap-2">
+          <CollaboratorAvatars collaborators={collaborators} size="sm" />
+        </View>
+      )}
     </Pressable>
   );
 }

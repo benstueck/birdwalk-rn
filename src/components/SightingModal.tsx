@@ -22,6 +22,7 @@ const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 interface SightingModalProps {
   visible: boolean;
   sighting: Sighting | null;
+  creatorName?: string;
   onClose: () => void;
   onDelete?: (sightingId: string) => void;
   onSightingUpdated?: (sighting: Sighting) => void;
@@ -31,6 +32,7 @@ interface SightingModalProps {
 export function SightingModal({
   visible,
   sighting,
+  creatorName,
   onClose,
   onDelete,
   onSightingUpdated,
@@ -247,7 +249,7 @@ export function SightingModal({
                   {formatTime(sighting.timestamp)}
                 </Text>
               </View>
-              <View className="flex-row items-center justify-between">
+              <View className="flex-row items-center justify-between mb-2">
                 <Text className="text-sm text-gray-500 dark:text-[#72767d]">Type</Text>
                 <View className="flex-row items-center">
                   <Ionicons
@@ -260,6 +262,14 @@ export function SightingModal({
                   </Text>
                 </View>
               </View>
+              {creatorName && (
+                <View className="flex-row items-center justify-between">
+                  <Text className="text-sm text-gray-500 dark:text-[#72767d]">Added by</Text>
+                  <Text className="text-sm font-medium text-gray-900 dark:text-[#dcddde]">
+                    {creatorName}
+                  </Text>
+                </View>
+              )}
             </View>
 
             {/* Notes */}

@@ -12,14 +12,17 @@ import { useFocusEffect } from "@react-navigation/native";
 import { useHeaderHeight } from "@react-navigation/elements";
 import { Ionicons } from "@expo/vector-icons";
 import { supabase } from "../lib/supabase";
+import { useAuth } from "../contexts/AuthContext";
 import { useTheme } from "../contexts/ThemeContext";
 import type { Walk, Sighting } from "../types/database";
 import type { WalksStackScreenProps } from "../navigation/types";
 import { SightingCard } from "../components/SightingCard";
+import { CollaboratorAvatars } from "../components/CollaboratorAvatars";
 import { NewSightingModal } from "../components/NewSightingModal";
 import { SightingModal } from "../components/SightingModal";
 import { WalkOptionsButton } from "../components/WalkOptionsButton";
 import { EditWalkModal } from "../components/EditWalkModal";
+import { InviteCollaboratorModal } from "../components/InviteCollaboratorModal";
 import { FABButton } from "../components/FABButton";
 
 export function WalkDetailScreen({
@@ -29,34 +32,44 @@ export function WalkDetailScreen({
   const { walkId } = route.params;
   const headerHeight = useHeaderHeight();
   const { colors } = useTheme();
+  const { user } = useAuth();
   const [walk, setWalk] = useState<Walk | null>(null);
   const [sightings, setSightings] = useState<Sighting[]>([]);
+  const [collaborators, setCollaborators] = useState<{ user_id: string; avatar_id: number; display_name: string; role: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
   const [showNewSightingModal, setShowNewSightingModal] = useState(false);
   const [selectedSighting, setSelectedSighting] = useState<Sighting | null>(null);
+  const [selectedSightingCreator, setSelectedSightingCreator] = useState<string | undefined>();
   const [showSightingModal, setShowSightingModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showInviteModal, setShowInviteModal] = useState(false);
 
   const handleSightingPress = (sighting: Sighting) => {
     setSelectedSighting(sighting);
+    setSelectedSightingCreator((sighting as any).creator?.display_name);
     setShowSightingModal(true);
   };
 
   const handleCloseSightingModal = () => {
     setShowSightingModal(false);
     setSelectedSighting(null);
+    setSelectedSightingCreator(undefined);
   };
 
   const fetchData = async () => {
-    const [walkResult, sightingsResult] = await Promise.all([
+    const [walkResult, sightingsResult, collaboratorsResult] = await Promise.all([
       supabase.from("walks").select("*").eq("id", walkId).single(),
       supabase
         .from("sightings")
-        .select("*")
+        .select("*, creator:profiles!sightings_created_by_fkey2(display_name, username)")
         .eq("walk_id", walkId)
         .order("timestamp", { ascending: false }),
+      supabase
+        .from("walk_collaborators")
+        .select("user_id, role, profiles(avatar_id, display_name)")
+        .eq("walk_id", walkId),
     ]);
 
     if (walkResult.error) {
@@ -68,7 +81,18 @@ export function WalkDetailScreen({
     if (sightingsResult.error) {
       console.error("Error fetching sightings:", sightingsResult.error);
     } else {
-      setSightings(sightingsResult.data || []);
+      setSightings((sightingsResult.data as any[]) || []);
+    }
+
+    if (!collaboratorsResult.error) {
+      setCollaborators(
+        (collaboratorsResult.data ?? []).map((c: any) => ({
+          user_id: c.user_id,
+          avatar_id: c.profiles?.avatar_id ?? 1,
+          display_name: c.profiles?.display_name ?? "",
+          role: c.role,
+        }))
+      );
     }
   };
 
@@ -160,7 +184,8 @@ export function WalkDetailScreen({
   }
 
   const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString("en-US", {
+    // Append time to avoid UTC midnight parsing shifting the date in local timezones
+    return new Date(`${dateStr}T00:00:00`).toLocaleDateString("en-US", {
       weekday: "long",
       year: "numeric",
       month: "long",
@@ -182,18 +207,23 @@ export function WalkDetailScreen({
             {walk.notes && (
               <Text className="text-gray-600 dark:text-[#b9bbbe] mt-3">{walk.notes}</Text>
             )}
-            <View className="flex-row items-center mt-4">
+            <View className="flex-row items-center justify-between mt-4">
               <View className="bg-gray-100 dark:bg-[#202225] px-3 py-1 rounded-full">
                 <Text className="text-gray-700 dark:text-[#dcddde] font-medium">
                   {sightings.length} sighting{sightings.length !== 1 ? "s" : ""}
                 </Text>
               </View>
+              {collaborators.length > 1 && (
+                <CollaboratorAvatars collaborators={collaborators} size="md" />
+              )}
             </View>
           </View>
         }
         renderItem={({ item }) => (
           <SightingCard
             sighting={item}
+            creatorName={(item as any).creator?.display_name}
+            showCreator={collaborators.length > 1}
             onPress={() => handleSightingPress(item)}
           />
         )}
@@ -218,10 +248,13 @@ export function WalkDetailScreen({
         }
       />
 
-      <WalkOptionsButton
-        onEdit={handleEditWalk}
-        onDelete={handleDeleteWalk}
-      />
+      {walk.user_id === user?.id && (
+        <WalkOptionsButton
+          onEdit={handleEditWalk}
+          onDelete={handleDeleteWalk}
+          onInvite={() => setShowInviteModal(true)}
+        />
+      )}
 
       <FABButton
         onPress={() => setShowNewSightingModal(true)}
@@ -241,6 +274,7 @@ export function WalkDetailScreen({
       <SightingModal
         visible={showSightingModal}
         sighting={selectedSighting}
+        creatorName={selectedSightingCreator}
         topInset={headerHeight}
         onClose={handleCloseSightingModal}
         onDelete={handleDeleteSighting}
@@ -250,6 +284,14 @@ export function WalkDetailScreen({
           );
           setSelectedSighting(updated);
         }}
+      />
+
+      <InviteCollaboratorModal
+        visible={showInviteModal}
+        walkId={walkId}
+        walkName={walk.name}
+        topInset={headerHeight}
+        onClose={() => setShowInviteModal(false)}
       />
 
       <EditWalkModal

@@ -76,6 +76,33 @@ export async function declineInvitation(invitationId: string): Promise<void> {
   if (error) throw error;
 }
 
+export interface SentInvitation {
+  id: string;
+  invitee_id: string;
+  invitee_username: string;
+  invitee_display_name: string;
+  invitee_avatar_id: number;
+}
+
+export async function getSentInvitationsForWalk(walkId: string): Promise<SentInvitation[]> {
+  const { data, error } = await supabase
+    .from("walk_invitations")
+    .select("id, invitee_id, invitee:profiles!walk_invitations_invitee_id_fkey2(username, display_name, avatar_id)")
+    .eq("walk_id", walkId)
+    .eq("status", "pending")
+    .gt("expires_at", new Date().toISOString());
+
+  if (error) throw error;
+
+  return (data ?? []).map((row: any) => ({
+    id: row.id,
+    invitee_id: row.invitee_id,
+    invitee_username: row.invitee?.username ?? "",
+    invitee_display_name: row.invitee?.display_name ?? "",
+    invitee_avatar_id: row.invitee?.avatar_id ?? 1,
+  }));
+}
+
 export async function cancelInvitation(invitationId: string): Promise<void> {
   const { error } = await supabase
     .from("walk_invitations")

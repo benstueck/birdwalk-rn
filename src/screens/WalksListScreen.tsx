@@ -76,24 +76,26 @@ export function WalksListScreen({
     const ascending = sortBy === "date-asc" || sortBy === "count-asc";
 
     const { data, error } = await supabase
-      .from("walks")
-      .select("*, sightings(count)")
-      .eq("user_id", user.id)
-      .order("date", { ascending: isDateSort ? ascending : false });
+      .from("walk_collaborators")
+      .select("walks!inner(*, sightings(count), walk_collaborators(user_id, role, profiles(avatar_id, display_name)))")
+      .eq("user_id", user.id);
 
     if (error) {
       console.error("Error fetching walks:", error);
     } else {
-      let walksData = (data as WalkWithCount[]) || [];
+      let walksData = ((data ?? []).map((row: any) => row.walks) as WalkWithCount[]);
 
-      // Client-side sorting for count-based sorts (Supabase can't sort by aggregated counts)
-      if (!isDateSort) {
-        walksData = [...walksData].sort((a, b) => {
+      walksData = [...walksData].sort((a, b) => {
+        if (isDateSort) {
+          const dtA = new Date(`${a.date}T${a.start_time}`).getTime();
+          const dtB = new Date(`${b.date}T${b.start_time}`).getTime();
+          return ascending ? dtA - dtB : dtB - dtA;
+        } else {
           const countA = a.sightings?.[0]?.count ?? 0;
           const countB = b.sightings?.[0]?.count ?? 0;
           return ascending ? countA - countB : countB - countA;
-        });
-      }
+        }
+      });
 
       setWalks(walksData);
     }
@@ -136,6 +138,12 @@ export function WalksListScreen({
           <WalkCard
             walk={item}
             sightingsCount={item.sightings?.[0]?.count ?? 0}
+            collaborators={(item as any).walk_collaborators?.map((c: any) => ({
+              user_id: c.user_id,
+              avatar_id: c.profiles?.avatar_id ?? 1,
+              display_name: c.profiles?.display_name ?? "",
+            })) ?? []}
+
             onPress={() =>
               navigation.navigate("WalkDetail", { walkId: item.id })
             }
