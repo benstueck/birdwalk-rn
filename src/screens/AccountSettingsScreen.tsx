@@ -70,29 +70,43 @@ export function AccountSettingsScreen() {
   const handleSaveEmail = async () => {
     if (!canSaveEmail) return;
     setSavingEmail(true);
-    const { error } = await supabase.auth.updateUser({ email });
-    setSavingEmail(false);
-    if (error) {
-      Alert.alert("Error", error.message);
-    } else {
-      Alert.alert(
-        "Check your inbox",
-        "A confirmation link has been sent to your new email address. Your email will update once you confirm."
-      );
+    try {
+      const { error } = await supabase.auth.updateUser({ email });
+      if (error) {
+        Alert.alert("Error", error.message);
+      } else {
+        Alert.alert(
+          "Check your inbox",
+          "A confirmation link has been sent to your new email address. Your email will update once you confirm."
+        );
+      }
+    } catch (e: any) {
+      Alert.alert("Error", e.message ?? "Something went wrong.");
+    } finally {
+      setSavingEmail(false);
     }
   };
 
   const handleSavePassword = async () => {
     if (!canSavePassword) return;
     setSavingPassword(true);
-    const { error } = await supabase.auth.updateUser({ password: newPassword });
-    setSavingPassword(false);
-    if (error) {
-      Alert.alert("Error", error.message);
-    } else {
-      setNewPassword("");
-      setConfirmPassword("");
-      Alert.alert("Password updated", "Your password has been changed successfully.");
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) {
+        Alert.alert("Error", error.message);
+      } else {
+        setNewPassword("");
+        setConfirmPassword("");
+        Alert.alert("Password updated", "Your password has been changed successfully.", [
+          { text: "OK", onPress: () => navigation.goBack() },
+        ]);
+      }
+    } catch (e: any) {
+      console.log("[AccountSettings] updateUser threw", e);
+      Alert.alert("Error", e.message ?? "Something went wrong.");
+    } finally {
+      console.log("[AccountSettings] finally — setSavingPassword(false)");
+      setSavingPassword(false);
     }
   };
 
