@@ -6,7 +6,7 @@ Birding frequently happens in areas with no cellular or Wi-Fi coverage. This fea
 ## Decisions & Constraints
 - **Bird packs**: Built at download time by calling eBird's `/product/spplist/{regionCode}` to get species codes for the region, then filtering the full taxonomy to those codes. Start with California (`US-CA`) for testing.
 - **Pack photos**: Cache Wikipedia image URLs for every species in the pack at download time. Run size tests first, then decide whether to compress or limit scope.
-- **Local DB**: WatermelonDB (SQLite-backed, built-in sync protocol, well-maintained for React Native).
+- **Local DB**: `expo-sqlite` (Expo Go compatible, part of the Expo SDK, sufficient for our last-write-wins sync). expo-sqlite was considered but dropped because it requires a native dev build and would break Expo Go; since we're writing our own last-write-wins sync anyway, expo-sqlite's sync primitives weren't worth the cost.
 - **Sync strategy**: Last-write-wins by timestamp. Collaborative walks are blocked for editing in offline mode (read-only), so conflict risk is eliminated there.
 - **Offline toggle**: Manual toggle in Profile tab. On app open with no connectivity while not in offline mode, show a modal prompting the user to enable offline mode. User manually turns it off to go back online and trigger sync.
 - **Blocked features offline**: collaborative walk invitations, sending/receiving invites, inbox, profile edits, search (global), anything requiring auth state refresh.
@@ -20,7 +20,7 @@ Birding frequently happens in areas with no cellular or Wi-Fi coverage. This fea
 Wire up the offline mode state machine before building anything else.
 
 ### Steps
-1. **Install dependencies**: `@nozbe/watermelondb`, `@nozbe/with-observables`, `expo-file-system` (for image caching), `@react-native-community/netinfo` (for connectivity detection).
+1. **Install dependencies**: `expo-sqlite`, `expo-file-system` (for image caching), `@react-native-community/netinfo` (for connectivity detection). ~~`@nozbe/watermelondb`~~ — switched to expo-sqlite for Expo Go compatibility.
 2. **Create `OfflineContext`** (`src/contexts/OfflineContext.tsx`)
    - State: `isOfflineMode: boolean`, `pendingSyncCount: number`
    - Persisted to AsyncStorage (`@offline_mode_enabled`)
@@ -31,22 +31,20 @@ Wire up the offline mode state machine before building anything else.
 
 ---
 
-## Phase 2: WatermelonDB Schema & Local Database
+## Phase 2: expo-sqlite Schema & Local Database
 
 ### Goal
-Create the local database that mirrors the Supabase tables needed for offline operation.
+Create the local SQLite database that mirrors the Supabase tables needed for offline operation.
 
-### Schema (`src/db/schema.ts`)
-Tables mirroring Supabase structure, with WatermelonDB conventions:
-- **`walks`**: `id` (server id), `name`, `location_lat`, `location_lng`, `date`, `start_time`, `notes`, `created_at`, `is_collaborative` (bool), `synced_at`, `is_dirty` (bool — has unsynced local changes)
-- **`sightings`**: `id` (server id), `walk_id`, `species_code`, `species_name`, `scientific_name`, `location_lat`, `location_lng`, `timestamp`, `type`, `notes`, `created_at`, `created_by`, `synced_at`, `is_dirty`
-- **`bird_pack_species`**: `pack_id`, `species_code`, `species_name`, `scientific_name`, `image_url` (cached Wikipedia URL), `image_cached` (bool)
-- **`bird_packs`**: `region_code`, `region_name`, `species_count`, `downloaded_at`, `is_active`
+### Schema (`src/db/database.ts`)
+Tables mirroring Supabase structure, with sync tracking columns:
+- **`walks`**: `id` (TEXT, local uuid), `server_id` (TEXT, Supabase uuid), `name`, `location_lat`, `location_lng`, `date`, `start_time`, `notes`, `created_at`, `is_collaborative` (INTEGER 0/1), `synced_at`, `is_dirty` (INTEGER 0/1), `deleted_locally` (INTEGER 0/1)
+- **`sightings`**: `id` (TEXT, local uuid), `server_id`, `walk_id` (local), `walk_server_id`, `species_code`, `species_name`, `scientific_name`, `location_lat`, `location_lng`, `timestamp`, `type`, `notes`, `created_at`, `created_by`, `synced_at`, `is_dirty`, `deleted_locally`
+- **`bird_pack_species`**: `pack_region_code`, `species_code`, `species_name`, `scientific_name`, `image_url`, `local_image_path`, `image_cached` (INTEGER 0/1)
+- **`bird_packs`**: `region_code` (PRIMARY KEY), `region_name`, `species_count`, `downloaded_at`, `is_active` (INTEGER 0/1)
 
 ### Files
-- `src/db/schema.ts` — WatermelonDB schema definition
-- `src/db/models/Walk.ts`, `Sighting.ts`, `BirdPack.ts`, `BirdPackSpecies.ts` — model classes
-- `src/db/index.ts` — database initialization, exported `database` singleton
+- `src/db/database.ts` — SQLite database singleton, schema creation, typed query helpers
 
 ---
 
@@ -63,7 +61,7 @@ Let users download, view, and delete regional bird packs.
    - Filter taxonomy to CA species codes → ~700 species
    - Fetch Wikipedia image URL for each species (batched, using existing `fetchBirdImage` logic from `src/utils/birdImages.ts`)
    - Use `expo-file-system` to download and cache each image locally
-   - Write all species + image paths to WatermelonDB `bird_pack_species` table
+   - Write all species + image paths to `bird_pack_species` table via expo-sqlite
 3. Show download progress (species fetched, images cached, MB downloaded).
 4. After download, record the pack in `bird_packs` table.
 
@@ -75,11 +73,11 @@ Let users download, view, and delete regional bird packs.
 
 ### Species Search in Offline Mode (`src/lib/ebird.ts`)
 - Modify `searchSpeciesCached()` to check `isOfflineMode` flag
-- If offline: query `bird_pack_species` WatermelonDB table instead of calling eBird API
-- Search by `species_name` or `scientific_name` (LIKE query via WatermelonDB)
+- If offline: query `bird_pack_species` expo-sqlite table instead of calling eBird API
+- Search by `species_name` or `scientific_name` (LIKE query via expo-sqlite)
 
 ### Image display in Offline Mode (`src/components/BirdImage.tsx`)
-- If offline: look up local cached file path from WatermelonDB instead of fetching Wikipedia
+- If offline: look up local cached file path from expo-sqlite instead of fetching Wikipedia
 - Display using `expo-image` with local `file://` URI
 
 ---
@@ -87,7 +85,7 @@ Let users download, view, and delete regional bird packs.
 ## Phase 4: Offline-Aware Data Layer
 
 ### Goal
-Route walk/sighting reads and writes through WatermelonDB when offline.
+Route walk/sighting reads and writes through expo-sqlite when offline.
 
 ### Strategy
 Create a thin **data service layer** that the screens call instead of hitting Supabase directly:
@@ -96,7 +94,7 @@ Create a thin **data service layer** that the screens call instead of hitting Su
 
 Each function checks `isOfflineMode`:
 - **Online**: existing Supabase query (unchanged)
-- **Offline**: WatermelonDB query/write, sets `is_dirty = true` on mutations
+- **Offline**: expo-sqlite query/write, sets `is_dirty = true` on mutations
 
 ### Screen changes
 Refactor these screens to use the service layer instead of direct Supabase calls:
@@ -135,7 +133,7 @@ Push local changes to Supabase when the user turns off offline mode.
 - Show a loading state / progress in the offline toggle area while sync is in progress
 
 ### Initial population (first time going offline)
-When user first enables offline mode, download their existing walks + sightings from Supabase into WatermelonDB so they're available offline. Show a "Preparing offline data..." loading state.
+When user first enables offline mode, download their existing walks + sightings from Supabase into expo-sqlite so they're available offline. Show a "Preparing offline data..." loading state.
 
 ---
 
@@ -152,9 +150,9 @@ When user first enables offline mode, download their existing walks + sightings 
 | File | Purpose |
 |------|---------|
 | `src/contexts/OfflineContext.tsx` | Offline state + toggle |
-| `src/db/schema.ts` | WatermelonDB schema |
-| `src/db/models/*.ts` | WatermelonDB model classes |
-| `src/db/index.ts` | DB singleton |
+| `src/db/schema.ts` | expo-sqlite schema |
+| `src/db/models/*.ts` | expo-sqlite model classes |
+| `src/db/database.ts` | expo-sqlite singleton, schema, typed helpers |
 | `src/services/walksService.ts` | Online/offline walk CRUD |
 | `src/services/sightingsService.ts` | Online/offline sighting CRUD |
 | `src/services/syncService.ts` | Sync dirty records to Supabase |
@@ -165,7 +163,7 @@ When user first enables offline mode, download their existing walks + sightings 
 ## Key Files to Modify
 | File | Change |
 |------|--------|
-| `src/lib/ebird.ts` | Offline species search via WatermelonDB |
+| `src/lib/ebird.ts` | Offline species search via expo-sqlite |
 | `src/components/BirdImage.tsx` | Serve local cached images when offline |
 | `src/utils/birdImages.ts` | Add local file path lookup |
 | `src/navigation/RootNavigator.tsx` | No-connectivity modal on mount |
@@ -176,7 +174,7 @@ When user first enables offline mode, download their existing walks + sightings 
 | `src/screens/LifersScreen.tsx` | Derive lifers from local DB offline |
 | `src/components/NewSightingModal.tsx` | Use sightingsService |
 | `src/components/EditSightingModal.tsx` | Use sightingsService |
-| `App.tsx` | Add OfflineProvider, WatermelonDB provider |
+| `App.tsx` | Add OfflineProvider, expo-sqlite provider |
 
 ---
 
@@ -192,7 +190,7 @@ When user first enables offline mode, download their existing walks + sightings 
 
 ## Build Order (suggested)
 1. Phase 1 (OfflineContext + toggle) — needed by everything else
-2. Phase 2 (WatermelonDB schema) — foundation for data
+2. Phase 2 (expo-sqlite schema) — foundation for data
 3. Phase 4 (offline data layer + feature gating) — makes the app usable offline
 4. Phase 3 (bird packs) — species search + images offline
 5. Phase 5 (sync) — close the loop back to Supabase

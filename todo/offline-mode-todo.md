@@ -1,6 +1,6 @@
 # Offline Mode — Implementation TODO
 
-**Status:** Not started
+**Status:** Phase 1 Complete — Starting Phase 2
 **Plan:** `/plans/offline-mode-plan.md`
 
 ---
@@ -11,31 +11,30 @@
 
 ### Dependencies
 
-- [ ] Install `@nozbe/watermelondb`
-- [ ] Install `@nozbe/with-observables`
-- [ ] Install `expo-file-system`
-- [ ] Install `@react-native-community/netinfo`
-- [ ] Configure WatermelonDB native module in Expo (babel plugin, metro config)
+- [x] Install `expo-sqlite` (via `npx expo install`)
+- [x] Install `expo-file-system`
+- [x] Install `@react-native-community/netinfo`
+- ~~`@nozbe/watermelondb`~~ — dropped in favour of expo-sqlite for Expo Go compatibility
 
 ### OfflineContext (`src/contexts/OfflineContext.tsx`)
 
-- [ ] `isOfflineMode: boolean` state, persisted to AsyncStorage (`@offline_mode_enabled`)
-- [ ] `pendingSyncCount: number` state
-- [ ] `enableOfflineMode()` — sets mode, triggers initial Supabase → local DB population
-- [ ] `disableOfflineMode()` — triggers sync, then clears mode
-- [ ] Wrap in `App.tsx` (alongside `AuthProvider`)
+- [x] `isOfflineMode: boolean` state, persisted to AsyncStorage (`@offline_mode_enabled`)
+- [x] `pendingSyncCount: number` state
+- [x] `enableOfflineMode()` — sets mode, triggers initial Supabase → local DB population
+- [x] `disableOfflineMode()` — triggers sync, then clears mode
+- [x] Wrap in `App.tsx` (alongside `AuthProvider`)
 
 ### Offline toggle UI
 
-- [ ] Add offline mode Switch row to `ProfileScreen` near the theme toggle
-- [ ] Add `OfflineBanner` component (`src/components/OfflineBanner.tsx`) — subtle top bar shown when offline
-- [ ] Display `OfflineBanner` in `MainNavigator` when `isOfflineMode` is true
+- [x] Add offline mode Switch row to `ProfileScreen` near the theme toggle
+- [x] Add `OfflineBanner` component (`src/components/OfflineBanner.tsx`) — subtle top bar shown when offline
+- [x] Display `OfflineBanner` in `RootNavigator` wrapping `MainNavigator`
 
 ### No-connectivity modal
 
-- [ ] In `RootNavigator`, use NetInfo to detect no connection on mount
-- [ ] If `!isOfflineMode && !isConnected`, show a modal offering to enable offline mode
-- [ ] One-time per app open (track with a ref, don't re-show if dismissed)
+- [x] In `RootNavigator`, use NetInfo to detect no connection on mount
+- [x] If `!isOfflineMode && !isConnected`, show a modal offering to enable offline mode
+- [x] One-time per app open (track with a ref, don't re-show if dismissed)
 
 **Phase 1 acceptance:**
 - Toggle in Profile tab persists across app restarts
@@ -44,31 +43,25 @@
 
 ---
 
-## Phase 2: WatermelonDB Schema & Local Database
+## Phase 2: expo-sqlite Schema & Local Database
 
 **Goal:** Create the local SQLite database that mirrors Supabase for offline use.
 
-### Schema (`src/db/schema.ts`)
+### Schema & DB (`src/db/database.ts`)
 
-- [ ] `walks` table: `server_id`, `name`, `location_lat`, `location_lng`, `date`, `start_time`, `notes`, `created_at`, `is_collaborative`, `synced_at`, `is_dirty`, `deleted_locally`
-- [ ] `sightings` table: `server_id`, `walk_id` (local WMelonDB id), `walk_server_id`, `species_code`, `species_name`, `scientific_name`, `location_lat`, `location_lng`, `timestamp`, `type`, `notes`, `created_at`, `created_by`, `synced_at`, `is_dirty`, `deleted_locally`
-- [ ] `bird_packs` table: `region_code`, `region_name`, `species_count`, `downloaded_at`, `is_active`
-- [ ] `bird_pack_species` table: `pack_id` (local), `species_code`, `species_name`, `scientific_name`, `image_url`, `local_image_path`, `image_cached`
-
-### Models (`src/db/models/`)
-
-- [ ] `Walk.ts` — WatermelonDB model class
-- [ ] `Sighting.ts` — WatermelonDB model class
-- [ ] `BirdPack.ts` — WatermelonDB model class
-- [ ] `BirdPackSpecies.ts` — WatermelonDB model class
+- [ ] `walks` table: `id` (local uuid), `server_id`, `name`, `location_lat`, `location_lng`, `date`, `start_time`, `notes`, `created_at`, `is_collaborative`, `synced_at`, `is_dirty`, `deleted_locally`
+- [ ] `sightings` table: `id` (local uuid), `server_id`, `walk_id` (local), `walk_server_id`, `species_code`, `species_name`, `scientific_name`, `location_lat`, `location_lng`, `timestamp`, `type`, `notes`, `created_at`, `created_by`, `synced_at`, `is_dirty`, `deleted_locally`
+- [ ] `bird_packs` table: `region_code` (PK), `region_name`, `species_count`, `downloaded_at`, `is_active`
+- [ ] `bird_pack_species` table: `pack_region_code`, `species_code`, `species_name`, `scientific_name`, `image_url`, `local_image_path`, `image_cached`
+- [ ] `BirdPack.ts` — expo-sqlite model class
+- [ ] `BirdPackSpecies.ts` — expo-sqlite model class
 
 ### DB initialization
 
-- [ ] `src/db/index.ts` — database singleton export
-- [ ] Add `DatabaseProvider` to `App.tsx`
+- [ ] `src/db/database.ts` — expo-sqlite singleton, `CREATE TABLE IF NOT EXISTS` migrations, typed query helpers
 
 **Phase 2 acceptance:**
-- App boots without errors with WatermelonDB configured
+- App boots without errors with expo-sqlite configured
 - Can write and read records from all four tables in a test
 
 ---
@@ -77,21 +70,21 @@
 
 *(Phase 4 before Phase 3 — gets the app working offline before adding bird packs)*
 
-**Goal:** Route walk/sighting reads and writes through WatermelonDB when offline.
+**Goal:** Route walk/sighting reads and writes through expo-sqlite when offline.
 
 ### Walks service (`src/services/walksService.ts`)
 
-- [ ] `getWalks(userId)` — Supabase online / WatermelonDB offline
-- [ ] `getWalk(walkId)` — Supabase online / WatermelonDB offline
-- [ ] `createWalk(data)` — Supabase online / WatermelonDB with `is_dirty=true` offline
-- [ ] `updateWalk(id, data)` — Supabase online / WatermelonDB with `is_dirty=true` offline
-- [ ] `deleteWalk(id)` — Supabase online / set `deleted_locally=true` in WatermelonDB offline
+- [ ] `getWalks(userId)` — Supabase online / expo-sqlite offline
+- [ ] `getWalk(walkId)` — Supabase online / expo-sqlite offline
+- [ ] `createWalk(data)` — Supabase online / expo-sqlite with `is_dirty=true` offline
+- [ ] `updateWalk(id, data)` — Supabase online / expo-sqlite with `is_dirty=true` offline
+- [ ] `deleteWalk(id)` — Supabase online / set `deleted_locally=true` in expo-sqlite offline
 
 ### Sightings service (`src/services/sightingsService.ts`)
 
-- [ ] `getSightings(walkId)` — Supabase online / WatermelonDB offline
-- [ ] `createSighting(data)` — Supabase online / WatermelonDB with `is_dirty=true` offline
-- [ ] `updateSighting(id, data)` — Supabase online / WatermelonDB with `is_dirty=true` offline
+- [ ] `getSightings(walkId)` — Supabase online / expo-sqlite offline
+- [ ] `createSighting(data)` — Supabase online / expo-sqlite with `is_dirty=true` offline
+- [ ] `updateSighting(id, data)` — Supabase online / expo-sqlite with `is_dirty=true` offline
 - [ ] `deleteSighting(id)` — Supabase online / set `deleted_locally=true` offline
 
 ### Screen refactors (use service layer)
@@ -131,7 +124,7 @@
 - [ ] Filter taxonomy to CA species codes (~700 species)
 - [ ] Batch-fetch Wikipedia image URLs using existing `fetchBirdImage()` from `src/utils/birdImages.ts`
 - [ ] Download each image to local filesystem via `expo-file-system`
-- [ ] Write all species + local paths to WatermelonDB `bird_pack_species` table
+- [ ] Write all species + local paths to expo-sqlite `bird_pack_species` table
 - [ ] Write pack metadata to `bird_packs` table
 - [ ] Show progress UI: species count, images cached, MB downloaded
 
@@ -148,12 +141,12 @@
 ### Offline species search
 
 - [ ] Modify `searchSpeciesCached()` in `src/lib/ebird.ts` to check `isOfflineMode`
-- [ ] If offline: query `bird_pack_species` WatermelonDB by `species_name` / `scientific_name`
+- [ ] If offline: query `bird_pack_species` expo-sqlite by `species_name` / `scientific_name`
 - [ ] Return same `EBirdSpecies` shape so callers need no changes
 
 ### Offline image serving
 
-- [ ] Modify `src/components/BirdImage.tsx` — if offline, look up `local_image_path` from WatermelonDB
+- [ ] Modify `src/components/BirdImage.tsx` — if offline, look up `local_image_path` from expo-sqlite
 - [ ] Serve image using `file://` URI via `expo-image`
 - [ ] Update `src/utils/birdImages.ts` with `getLocalImagePath(speciesCode)` helper
 
@@ -176,8 +169,8 @@
 
 ### Initial offline population (on `enableOfflineMode()`)
 
-- [ ] Fetch user's walks from Supabase → write to local WatermelonDB (mark `is_dirty=false`)
-- [ ] Fetch sightings for each walk → write to local WatermelonDB (mark `is_dirty=false`)
+- [ ] Fetch user's walks from Supabase → write to local expo-sqlite (mark `is_dirty=false`)
+- [ ] Fetch sightings for each walk → write to local expo-sqlite (mark `is_dirty=false`)
 - [ ] Show "Preparing offline data..." loading state during population
 
 ### Sync service (`src/services/syncService.ts`)
