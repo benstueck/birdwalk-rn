@@ -26,7 +26,10 @@
       },
       "edgeToEdgeEnabled": true,
       "package": "com.birdwalk.app",
-      "permissions": ["ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION"]
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -38,7 +41,8 @@
         {
           "locationWhenInUsePermission": "BirdWalk needs access to your location to record where you spot birds."
         }
-      ]
+      ],
+      "expo-sqlite"
     ]
   }
 }
