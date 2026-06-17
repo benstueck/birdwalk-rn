@@ -6,7 +6,7 @@ Birding frequently happens in areas with no cellular or Wi-Fi coverage. This fea
 ## Decisions & Constraints
 - **Bird packs**: Built at download time by calling eBird's `/product/spplist/{regionCode}` to get species codes for the region, then filtering the full taxonomy to those codes. Start with California (`US-CA`) for testing.
 - **Pack photos**: Cache Wikipedia image URLs for every species in the pack at download time. Run size tests first, then decide whether to compress or limit scope.
-- **Local DB**: `expo-sqlite` (Expo Go compatible, part of the Expo SDK, sufficient for our last-write-wins sync). expo-sqlite was considered but dropped because it requires a native dev build and would break Expo Go; since we're writing our own last-write-wins sync anyway, expo-sqlite's sync primitives weren't worth the cost.
+- **Local DB**: `expo-sqlite` (Expo Go compatible, part of the Expo SDK, sufficient for our last-write-wins sync). WatermelonDB was considered but dropped because it requires a native dev build and would break Expo Go; since we're writing our own sync anyway, WatermelonDB's sync primitives weren't worth the cost.
 - **Sync strategy**: Last-write-wins by timestamp. Collaborative walks are blocked for editing in offline mode (read-only), so conflict risk is eliminated there.
 - **Offline toggle**: Manual toggle in Profile tab. On app open with no connectivity while not in offline mode, show a modal prompting the user to enable offline mode. User manually turns it off to go back online and trigger sync.
 - **Blocked features offline**: collaborative walk invitations, sending/receiving invites, inbox, profile edits, search (global), anything requiring auth state refresh.
@@ -14,24 +14,24 @@ Birding frequently happens in areas with no cellular or Wi-Fi coverage. This fea
 
 ---
 
-## Phase 1: Foundation — OfflineContext & UI Toggle
+## Phase 1: Foundation — OfflineContext & UI Toggle ✅
 
 ### Goal
 Wire up the offline mode state machine before building anything else.
 
 ### Steps
-1. **Install dependencies**: `expo-sqlite`, `expo-file-system` (for image caching), `@react-native-community/netinfo` (for connectivity detection). ~~`@nozbe/watermelondb`~~ — switched to expo-sqlite for Expo Go compatibility.
+1. **Install dependencies**: `expo-sqlite`, `expo-file-system` (for image caching), `@react-native-community/netinfo` (for connectivity detection).
 2. **Create `OfflineContext`** (`src/contexts/OfflineContext.tsx`)
    - State: `isOfflineMode: boolean`, `pendingSyncCount: number`
    - Persisted to AsyncStorage (`@offline_mode_enabled`)
    - Expose: `enableOfflineMode()`, `disableOfflineMode()` (disableOfflineMode triggers sync)
-3. **Add offline toggle** to `ProfileScreen` (`src/screens/ProfileScreen.tsx`) — a simple row with a Switch in the settings area near the theme toggle.
+3. **Add offline toggle** to `ProfileScreen` (`src/screens/ProfileScreen.tsx`) — a Switch row in the settings area above Appearance.
 4. **No-connectivity modal**: In `RootNavigator` (`src/navigation/RootNavigator.tsx`), use NetInfo to detect no connection on mount. If `!isOfflineMode && !isConnected`, show a modal offering to enable offline mode. One-time per app open (track with a ref).
-5. **Offline banner**: Show a subtle banner/indicator when in offline mode (component: `OfflineBanner`, displayed in `MainNavigator` header area).
+5. **Offline banner**: Amber-colored absolute overlay covering the status bar area (`OfflineBanner`), no text (color alone signals offline mode).
 
 ---
 
-## Phase 2: expo-sqlite Schema & Local Database
+## Phase 2: expo-sqlite Schema & Local Database ✅
 
 ### Goal
 Create the local SQLite database that mirrors the Supabase tables needed for offline operation.
@@ -50,7 +50,38 @@ Tables mirroring Supabase structure, with sync tracking columns:
 
 ---
 
-## Phase 3: Bird Pack Download & Management
+## Phase 3: Offline-Aware Data Layer
+
+### Goal
+Route walk/sighting reads and writes through expo-sqlite when offline.
+
+### Strategy
+Create a thin **data service layer** that the screens call instead of hitting Supabase directly:
+- `src/services/walksService.ts` — `getWalks()`, `createWalk()`, `updateWalk()`, `deleteWalk()`
+- `src/services/sightingsService.ts` — `getSightings()`, `createSighting()`, `updateSighting()`, `deleteSighting()`
+
+Each function checks `isOfflineMode`:
+- **Online**: existing Supabase query (unchanged)
+- **Offline**: expo-sqlite query/write, sets `is_dirty = true` on mutations
+
+### Screen changes
+Refactor these screens to use the service layer instead of direct Supabase calls:
+- `WalksListScreen` — uses `walksService.getWalks()`
+- `WalkDetailScreen` — uses `walksService.getWalk()` + `sightingsService.getSightings()`
+- `NewWalkScreen` / `NewSightingModal` / `EditSightingModal` — use service layer for writes
+- `LifersScreen` — in offline mode, derive lifers from local sightings DB
+
+### Feature gating
+Create a `useOfflineGate` hook that returns `{ blocked: boolean, reason: string }`. Use it to:
+- Disable the Invite Collaborator button on `WalkDetailScreen` when offline
+- Hide the Inbox tab badge / block navigation to `InboxScreen` when offline
+- Disable `EditProfileScreen` navigation when offline
+- Make collaborative walks read-only (no add/edit/delete sighting buttons)
+- Show a `BlockedFeatureModal` explaining why an action isn't available offline
+
+---
+
+## Phase 4: Bird Pack Download & Management
 
 ### Goal
 Let users download, view, and delete regional bird packs.
@@ -84,37 +115,6 @@ Let users download, view, and delete regional bird packs.
 
 ---
 
-## Phase 4: Offline-Aware Data Layer
-
-### Goal
-Route walk/sighting reads and writes through expo-sqlite when offline.
-
-### Strategy
-Create a thin **data service layer** that the screens call instead of hitting Supabase directly:
-- `src/services/walksService.ts` — `getWalks()`, `createWalk()`, `updateWalk()`, `deleteWalk()`
-- `src/services/sightingsService.ts` — `getSightings()`, `createSighting()`, `updateSighting()`, `deleteSighting()`
-
-Each function checks `isOfflineMode`:
-- **Online**: existing Supabase query (unchanged)
-- **Offline**: expo-sqlite query/write, sets `is_dirty = true` on mutations
-
-### Screen changes
-Refactor these screens to use the service layer instead of direct Supabase calls:
-- `WalksListScreen` — uses `walksService.getWalks()`
-- `WalkDetailScreen` — uses `walksService.getWalk()` + `sightingsService.getSightings()`
-- `NewWalkScreen` / `NewSightingModal` / `EditSightingModal` — use service layer for writes
-- `LifersScreen` — in offline mode, derive lifers from local sightings DB
-
-### Feature gating
-Create a `useOfflineGate` hook that returns `{ blocked: boolean, reason: string }`. Use it to:
-- Disable the Invite Collaborator button on `WalkDetailScreen` when offline
-- Hide the Inbox tab badge / block navigation to `InboxScreen` when offline
-- Disable `EditProfileScreen` navigation when offline
-- Make collaborative walks read-only (no add/edit/delete sighting buttons)
-- Show a `BlockedFeatureModal` explaining why an action isn't available offline
-
----
-
 ## Phase 5: Sync Engine
 
 ### Goal
@@ -142,7 +142,6 @@ When user first enables offline mode, download their existing walks + sightings 
 ## Phase 6: UX Polish
 
 - **Pack size test**: After image caching is implemented, measure total disk usage for CA pack. If >500MB, consider compressing images at download time or offering "light" (no images) vs "full" packs.
-- **Offline mode indicator**: Subtle persistent banner or status indicator throughout the app.
 - **Collaborative walk read-only state**: Clear visual indication that a walk is read-only while offline.
 - **Sync errors**: If sync fails for a record, keep `is_dirty = true` and show an error in the profile settings area with a "Retry sync" button.
 
@@ -151,15 +150,13 @@ When user first enables offline mode, download their existing walks + sightings 
 ## Key Files to Create
 | File | Purpose |
 |------|---------|
-| `src/contexts/OfflineContext.tsx` | Offline state + toggle |
-| `src/db/schema.ts` | expo-sqlite schema |
-| `src/db/models/*.ts` | expo-sqlite model classes |
-| `src/db/database.ts` | expo-sqlite singleton, schema, typed helpers |
+| `src/contexts/OfflineContext.tsx` ✅ | Offline state + toggle |
+| `src/db/database.ts` ✅ | expo-sqlite singleton, schema, typed helpers |
 | `src/services/walksService.ts` | Online/offline walk CRUD |
 | `src/services/sightingsService.ts` | Online/offline sighting CRUD |
 | `src/services/syncService.ts` | Sync dirty records to Supabase |
 | `src/screens/PackManagementScreen.tsx` | Pack download/management UI |
-| `src/components/OfflineBanner.tsx` | Offline status indicator |
+| `src/components/OfflineBanner.tsx` ✅ | Offline status indicator |
 | `src/hooks/useOfflineGate.ts` | Feature gating hook |
 
 ## Key Files to Modify
@@ -168,15 +165,15 @@ When user first enables offline mode, download their existing walks + sightings 
 | `src/lib/ebird.ts` | Offline species search via expo-sqlite |
 | `src/components/BirdImage.tsx` | Serve local cached images when offline |
 | `src/utils/birdImages.ts` | Add local file path lookup |
-| `src/navigation/RootNavigator.tsx` | No-connectivity modal on mount |
-| `src/navigation/ProfileNavigator.tsx` | Add PackManagement route |
-| `src/screens/ProfileScreen.tsx` | Offline toggle, link to Pack Management |
+| `src/navigation/RootNavigator.tsx` ✅ | No-connectivity modal on mount |
+| `src/navigation/ProfileStackNavigator.tsx` | Add PackManagement route |
+| `src/screens/ProfileScreen.tsx` ✅ | Offline toggle, link to Pack Management |
 | `src/screens/WalksListScreen.tsx` | Use walksService |
 | `src/screens/WalkDetailScreen.tsx` | Use sightingsService, gate collab features |
 | `src/screens/LifersScreen.tsx` | Derive lifers from local DB offline |
 | `src/components/NewSightingModal.tsx` | Use sightingsService |
 | `src/components/EditSightingModal.tsx` | Use sightingsService |
-| `App.tsx` | Add OfflineProvider, expo-sqlite provider |
+| `App.tsx` ✅ | Add OfflineProvider |
 
 ---
 
@@ -187,13 +184,3 @@ When user first enables offline mode, download their existing walks + sightings 
 4. **Feature gating**: While offline, verify Inbox nav is blocked, collaborative walk sighting buttons are hidden, profile edit is blocked.
 5. **No-connectivity modal**: Kill network, reopen app (not in offline mode) → confirm modal appears.
 6. **Image offline**: With pack downloaded + offline mode on, add a sighting → confirm bird image loads from local cache.
-
----
-
-## Build Order (suggested)
-1. Phase 1 (OfflineContext + toggle) — needed by everything else
-2. Phase 2 (expo-sqlite schema) — foundation for data
-3. Phase 4 (offline data layer + feature gating) — makes the app usable offline
-4. Phase 3 (bird packs) — species search + images offline
-5. Phase 5 (sync) — close the loop back to Supabase
-6. Phase 6 (polish + size tests)

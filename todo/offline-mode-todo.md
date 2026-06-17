@@ -1,20 +1,17 @@
 # Offline Mode — Implementation TODO
 
-**Status:** Phase 1 Complete — Starting Phase 2
+**Status:** Phase 2 Complete — Starting Phase 3
 **Plan:** `/plans/offline-mode-plan.md`
 
 ---
 
-## Phase 1: Foundation — OfflineContext & UI
-
-**Goal:** Wire up offline mode state machine and surface it in the UI.
+## Phase 1: Foundation — OfflineContext & UI ✅
 
 ### Dependencies
 
 - [x] Install `expo-sqlite` (via `npx expo install`)
 - [x] Install `expo-file-system`
 - [x] Install `@react-native-community/netinfo`
-- ~~`@nozbe/watermelondb`~~ — dropped in favour of expo-sqlite for Expo Go compatibility
 
 ### OfflineContext (`src/contexts/OfflineContext.tsx`)
 
@@ -26,46 +23,34 @@
 
 ### Offline toggle UI
 
-- [x] Add offline mode Switch row to `ProfileScreen` near the theme toggle
-- [x] Add `OfflineBanner` component (`src/components/OfflineBanner.tsx`) — subtle top bar shown when offline
-- [x] Display `OfflineBanner` in `RootNavigator` wrapping `MainNavigator`
+- [x] Add offline mode Switch row to `ProfileScreen` above Appearance section
+- [x] Add `OfflineBanner` component — amber absolute overlay on status bar, no text
+- [x] Render `OfflineBanner` in `RootNavigator` above `MainNavigator`
 
 ### No-connectivity modal
 
 - [x] In `RootNavigator`, use NetInfo to detect no connection on mount
-- [x] If `!isOfflineMode && !isConnected`, show a modal offering to enable offline mode
+- [x] If `!isOfflineMode && !isConnected`, show modal offering to enable offline mode
 - [x] One-time per app open (track with a ref, don't re-show if dismissed)
-
-**Phase 1 acceptance:**
-- Toggle in Profile tab persists across app restarts
-- Banner visible throughout app when offline mode is on
-- Modal appears on launch when no connection detected and offline mode is off
 
 ---
 
-## Phase 2: expo-sqlite Schema & Local Database
-
-**Goal:** Create the local SQLite database that mirrors Supabase for offline use.
+## Phase 2: expo-sqlite Schema & Local Database ✅
 
 ### Schema & DB (`src/db/database.ts`)
 
-- [x] `walks` table: `id` (local uuid), `server_id`, `name`, `location_lat`, `location_lng`, `date`, `start_time`, `notes`, `created_at`, `is_collaborative`, `synced_at`, `is_dirty`, `deleted_locally`
-- [x] `sightings` table: `id` (local uuid), `server_id`, `walk_id` (local), `walk_server_id`, `species_code`, `species_name`, `scientific_name`, `location_lat`, `location_lng`, `timestamp`, `type`, `notes`, `created_at`, `created_by`, `synced_at`, `is_dirty`, `deleted_locally`
-- [x] `walk_collaborators` table: `walk_id` (server id), `user_id`, `role` — read-only cache for walks list join and collaborative walk detection
-- [x] `profiles` table: `id`, `username`, `display_name`, `bio`, `avatar_id` — read-only cache of current user's own profile
-- [x] `bird_packs` table: `region_code` (PK), `region_name`, `species_count`, `downloaded_at`, `is_active`
-- [x] `bird_pack_species` table: `pack_region_code`, `species_code`, `species_name`, `scientific_name`, `image_url`, `local_image_path`, `image_cached`
-- [x] `src/db/database.ts` — expo-sqlite singleton, `CREATE TABLE IF NOT EXISTS` migrations, typed query helpers
-
-**Phase 2 acceptance:**
-- App boots without errors with expo-sqlite configured
-- Can write and read records from all four tables in a test
+- [x] `walks` table with sync tracking columns (`is_dirty`, `deleted_locally`, `synced_at`)
+- [x] `sightings` table with sync tracking columns
+- [x] `walk_collaborators` table — read-only cache for walks list join
+- [x] `profiles` table — read-only cache of current user's own profile
+- [x] `bird_packs` table — downloaded pack metadata
+- [x] `bird_pack_species` table — species list + image paths per pack
+- [x] Typed query helpers for all tables
+- [x] `getDirtyWalks()` / `getDirtySightings()` for Phase 5 sync
 
 ---
 
-## Phase 4: Offline-Aware Data Layer
-
-*(Phase 4 before Phase 3 — gets the app working offline before adding bird packs)*
+## Phase 3: Offline-Aware Data Layer
 
 **Goal:** Route walk/sighting reads and writes through expo-sqlite when offline.
 
@@ -75,7 +60,7 @@
 - [ ] `getWalk(walkId)` — Supabase online / expo-sqlite offline
 - [ ] `createWalk(data)` — Supabase online / expo-sqlite with `is_dirty=true` offline
 - [ ] `updateWalk(id, data)` — Supabase online / expo-sqlite with `is_dirty=true` offline
-- [ ] `deleteWalk(id)` — Supabase online / set `deleted_locally=true` in expo-sqlite offline
+- [ ] `deleteWalk(id)` — Supabase online / set `deleted_locally=true` offline
 
 ### Sightings service (`src/services/sightingsService.ts`)
 
@@ -102,7 +87,7 @@
 - [ ] Gate: `EditProfileScreen` navigation
 - [ ] Gate: sighting add/edit/delete on collaborative walks (show read-only state)
 
-**Phase 4 acceptance:**
+**Phase 3 acceptance:**
 - Create a walk and sighting in offline mode → both appear in the list
 - Collaborative walk shows no add/edit buttons in offline mode
 - Inbox badge hidden in offline mode
@@ -110,7 +95,7 @@
 
 ---
 
-## Phase 3: Bird Pack Download & Management
+## Phase 4: Bird Pack Download & Management
 
 **Goal:** Download regional species lists + cached images for offline species search.
 
@@ -138,7 +123,7 @@
 ### Offline species search
 
 - [ ] Modify `searchSpeciesCached()` in `src/lib/ebird.ts` to check `isOfflineMode`
-- [ ] If offline: query `bird_pack_species` expo-sqlite by `species_name` / `scientific_name`
+- [ ] If offline: query `bird_pack_species` by `species_name` / `scientific_name`
 - [ ] Return same `EBirdSpecies` shape so callers need no changes
 
 ### Offline image serving
@@ -147,16 +132,16 @@
 - [ ] Serve image using `file://` URI via `expo-image`
 - [ ] Update `src/utils/birdImages.ts` with `getLocalImagePath(speciesCode)` helper
 
-**Phase 3 acceptance:**
-- Download CA pack → ~700 species in DB, images on disk
-- In offline mode, species search works and returns results from local pack
-- Bird images load from local cache (no network requests)
-- Pack can be deleted cleanly
-
 ### Pack size test
 
 - [ ] After download, log/display total disk usage
 - [ ] If >500MB: evaluate image compression or light/full pack options
+
+**Phase 4 acceptance:**
+- Download CA pack → ~700 species in DB, images on disk
+- In offline mode, species search works and returns results from local pack
+- Bird images load from local cache (no network requests)
+- Pack can be deleted cleanly
 
 ---
 
