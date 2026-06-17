@@ -9,6 +9,7 @@ interface AuthContextType {
   session: Session | null;
   profile: Profile | null;
   loading: boolean;
+  profileLoading: boolean;
   refreshProfile: () => Promise<void>;
   signUp: (email: string, password: string) => Promise<{ error: Error | null }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
@@ -22,6 +23,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [profileLoading, setProfileLoading] = useState(false);
 
   const loadProfile = async (userId: string) => {
     try {
@@ -48,13 +50,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
-      if (session?.user) {
+      if (session?.user && event === 'SIGNED_IN') {
+        setProfileLoading(true);
         await loadProfile(session.user.id);
-      } else {
+        setProfileLoading(false);
+      } else if (!session) {
         setProfile(null);
+        setProfileLoading(false);
       }
     });
 
@@ -83,7 +88,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, session, profile, loading, refreshProfile, signUp, signIn, signOut }}
+      value={{ user, session, profile, loading, profileLoading, refreshProfile, signUp, signIn, signOut }}
     >
       {children}
     </AuthContext.Provider>

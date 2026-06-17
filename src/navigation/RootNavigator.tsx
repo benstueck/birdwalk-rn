@@ -9,7 +9,7 @@ import { MainNavigator } from "./MainNavigator";
 import { ProfileSetupScreen } from "../screens/ProfileSetupScreen";
 
 export function RootNavigator() {
-  const { user, profile, loading } = useAuth();
+  const { user, profile, loading, profileLoading } = useAuth();
   const { effectiveTheme, colors } = useTheme();
 
   const navigationTheme = useMemo(
@@ -17,7 +17,7 @@ export function RootNavigator() {
     [effectiveTheme]
   );
 
-  if (loading) {
+  if (loading || profileLoading) {
     return (
       <View className="flex-1 justify-center items-center bg-white dark:bg-[#36393f]">
         <ActivityIndicator size="large" color={colors.accent} />
