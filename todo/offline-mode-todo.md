@@ -49,16 +49,13 @@
 
 ### Schema & DB (`src/db/database.ts`)
 
-- [ ] `walks` table: `id` (local uuid), `server_id`, `name`, `location_lat`, `location_lng`, `date`, `start_time`, `notes`, `created_at`, `is_collaborative`, `synced_at`, `is_dirty`, `deleted_locally`
-- [ ] `sightings` table: `id` (local uuid), `server_id`, `walk_id` (local), `walk_server_id`, `species_code`, `species_name`, `scientific_name`, `location_lat`, `location_lng`, `timestamp`, `type`, `notes`, `created_at`, `created_by`, `synced_at`, `is_dirty`, `deleted_locally`
-- [ ] `bird_packs` table: `region_code` (PK), `region_name`, `species_count`, `downloaded_at`, `is_active`
-- [ ] `bird_pack_species` table: `pack_region_code`, `species_code`, `species_name`, `scientific_name`, `image_url`, `local_image_path`, `image_cached`
-- [ ] `BirdPack.ts` — expo-sqlite model class
-- [ ] `BirdPackSpecies.ts` — expo-sqlite model class
-
-### DB initialization
-
-- [ ] `src/db/database.ts` — expo-sqlite singleton, `CREATE TABLE IF NOT EXISTS` migrations, typed query helpers
+- [x] `walks` table: `id` (local uuid), `server_id`, `name`, `location_lat`, `location_lng`, `date`, `start_time`, `notes`, `created_at`, `is_collaborative`, `synced_at`, `is_dirty`, `deleted_locally`
+- [x] `sightings` table: `id` (local uuid), `server_id`, `walk_id` (local), `walk_server_id`, `species_code`, `species_name`, `scientific_name`, `location_lat`, `location_lng`, `timestamp`, `type`, `notes`, `created_at`, `created_by`, `synced_at`, `is_dirty`, `deleted_locally`
+- [x] `walk_collaborators` table: `walk_id` (server id), `user_id`, `role` — read-only cache for walks list join and collaborative walk detection
+- [x] `profiles` table: `id`, `username`, `display_name`, `bio`, `avatar_id` — read-only cache of current user's own profile
+- [x] `bird_packs` table: `region_code` (PK), `region_name`, `species_count`, `downloaded_at`, `is_active`
+- [x] `bird_pack_species` table: `pack_region_code`, `species_code`, `species_name`, `scientific_name`, `image_url`, `local_image_path`, `image_cached`
+- [x] `src/db/database.ts` — expo-sqlite singleton, `CREATE TABLE IF NOT EXISTS` migrations, typed query helpers
 
 **Phase 2 acceptance:**
 - App boots without errors with expo-sqlite configured

@@ -202,6 +202,34 @@ export function ProfileScreen() {
         </View>
       </View>
 
+      {/* Offline Mode */}
+      <View className="px-4 pb-0">
+        <Text className="text-lg font-semibold text-gray-800 dark:text-[#dcddde] mb-3">
+          Offline
+        </Text>
+        <View className="bg-white dark:bg-[#2f3136] rounded-lg overflow-hidden">
+          <View className="flex-row items-center p-4">
+            <View className="w-10 h-10 bg-gray-100 dark:bg-[#202225] rounded-full items-center justify-center mr-3">
+              <Ionicons name="cloud-offline-outline" size={20} color={isOfflineMode ? "#f59e0b" : colors.text.secondary} />
+            </View>
+            <View className="flex-1">
+              <Text className="text-base font-medium text-gray-900 dark:text-[#dcddde]">
+                Offline Mode
+              </Text>
+              <Text className="text-sm text-gray-500 dark:text-[#72767d] mt-0.5">
+                {isOfflineMode ? "App is working offline" : "Use app without internet"}
+              </Text>
+            </View>
+            <Switch
+              value={isOfflineMode}
+              onValueChange={(val) => val ? enableOfflineMode() : disableOfflineMode()}
+              trackColor={{ false: "#d1d5db", true: "#f59e0b" }}
+              thumbColor="white"
+            />
+          </View>
+        </View>
+      </View>
+
       {/* Appearance Section */}
       <View className="p-4">
         <Text className="text-lg font-semibold text-gray-800 dark:text-[#dcddde] mb-3">
@@ -283,34 +311,6 @@ export function ProfileScreen() {
               <Ionicons name="checkmark-circle" size={24} color="#5865f2" />
             )}
           </Pressable>
-        </View>
-      </View>
-
-      {/* Offline Mode */}
-      <View className="px-4 pb-0">
-        <Text className="text-lg font-semibold text-gray-800 dark:text-[#dcddde] mb-3">
-          Offline
-        </Text>
-        <View className="bg-white dark:bg-[#2f3136] rounded-lg overflow-hidden">
-          <View className="flex-row items-center p-4">
-            <View className="w-10 h-10 bg-gray-100 dark:bg-[#202225] rounded-full items-center justify-center mr-3">
-              <Ionicons name="cloud-offline-outline" size={20} color={isOfflineMode ? "#f59e0b" : colors.text.secondary} />
-            </View>
-            <View className="flex-1">
-              <Text className="text-base font-medium text-gray-900 dark:text-[#dcddde]">
-                Offline Mode
-              </Text>
-              <Text className="text-sm text-gray-500 dark:text-[#72767d] mt-0.5">
-                {isOfflineMode ? "App is working offline" : "Use app without internet"}
-              </Text>
-            </View>
-            <Switch
-              value={isOfflineMode}
-              onValueChange={(val) => val ? enableOfflineMode() : disableOfflineMode()}
-              trackColor={{ false: "#d1d5db", true: "#f59e0b" }}
-              thumbColor="white"
-            />
-          </View>
         </View>
       </View>
 

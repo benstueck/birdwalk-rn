@@ -40,6 +40,8 @@ Create the local SQLite database that mirrors the Supabase tables needed for off
 Tables mirroring Supabase structure, with sync tracking columns:
 - **`walks`**: `id` (TEXT, local uuid), `server_id` (TEXT, Supabase uuid), `name`, `location_lat`, `location_lng`, `date`, `start_time`, `notes`, `created_at`, `is_collaborative` (INTEGER 0/1), `synced_at`, `is_dirty` (INTEGER 0/1), `deleted_locally` (INTEGER 0/1)
 - **`sightings`**: `id` (TEXT, local uuid), `server_id`, `walk_id` (local), `walk_server_id`, `species_code`, `species_name`, `scientific_name`, `location_lat`, `location_lng`, `timestamp`, `type`, `notes`, `created_at`, `created_by`, `synced_at`, `is_dirty`, `deleted_locally`
+- **`walk_collaborators`**: `walk_id` (server id), `user_id`, `role` — read-only cache; needed because the walks list query joins through this table and to detect collaborative walks
+- **`profiles`**: `id` (server id), `username`, `display_name`, `bio`, `avatar_id` — read-only cache of current user's own profile for offline ProfileScreen display
 - **`bird_pack_species`**: `pack_region_code`, `species_code`, `species_name`, `scientific_name`, `image_url`, `local_image_path`, `image_cached` (INTEGER 0/1)
 - **`bird_packs`**: `region_code` (PRIMARY KEY), `region_name`, `species_count`, `downloaded_at`, `is_active` (INTEGER 0/1)
 

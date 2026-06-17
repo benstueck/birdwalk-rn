@@ -1,21 +1,30 @@
 import React from "react";
-import { View, Text } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { View, StyleSheet } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { StatusBar } from "expo-status-bar";
 import { useOffline } from "../contexts/OfflineContext";
 
 export function OfflineBanner() {
-  const { isOfflineMode, pendingSyncCount } = useOffline();
+  const { isOfflineMode } = useOffline();
+  const { top } = useSafeAreaInsets();
 
   if (!isOfflineMode) return null;
 
   return (
-    <View className="bg-amber-500 dark:bg-amber-600 px-4 py-2 flex-row items-center justify-center gap-2">
-      <Ionicons name="cloud-offline-outline" size={14} color="white" />
-      <Text className="text-white text-xs font-medium">
-        {pendingSyncCount > 0
-          ? `Offline mode · ${pendingSyncCount} change${pendingSyncCount !== 1 ? "s" : ""} pending sync`
-          : "Offline mode"}
-      </Text>
-    </View>
+    <>
+      <StatusBar style="light" />
+      <View style={[styles.banner, { height: top }]} pointerEvents="none" />
+    </>
   );
 }
+
+const styles = StyleSheet.create({
+  banner: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 999,
+    backgroundColor: "#f59e0b",
+  },
+});
